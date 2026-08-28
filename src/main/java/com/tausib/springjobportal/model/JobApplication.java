@@ -1,5 +1,9 @@
 package com.tausib.springjobportal.model;
 
+import com.tausib.springjobportal.job.JobPost;
+
+import com.tausib.springjobportal.user.User;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

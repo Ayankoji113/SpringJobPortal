@@ -5,18 +5,8 @@ export const getMatchScore = async (jobId) => {
     return response.data;
 };
 
-export const generateCoverLetter = async (jobId) => {
-    const response = await api.get(`/ai/cover-letter/${jobId}`);
-    return response.data;
-};
-
 export const getSalaryEstimate = async () => {
     const response = await api.get('/ai/salary-estimate');
-    return response.data;
-};
-
-export const getResumeSuggestions = async () => {
-    const response = await api.get('/ai/resume-suggestions');
     return response.data;
 };
 

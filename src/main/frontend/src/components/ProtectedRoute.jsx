@@ -2,8 +2,8 @@ import React, { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
-export const ProtectedRoute = ({ children, requireEmployer, requireJobSeeker, requireAdmin }) => {
-    const { isAuthenticated, isEmployer, isJobSeeker, isAdmin } = useContext(AuthContext);
+export const ProtectedRoute = ({ children, requireEmployer, requireJobSeeker }) => {
+    const { isAuthenticated, isEmployer, isJobSeeker } = useContext(AuthContext);
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
@@ -14,10 +14,6 @@ export const ProtectedRoute = ({ children, requireEmployer, requireJobSeeker, re
     }
 
     if (requireJobSeeker && !isJobSeeker) {
-        return <Navigate to="/" replace />;
-    }
-
-    if (requireAdmin && !isAdmin) {
         return <Navigate to="/" replace />;
     }
 

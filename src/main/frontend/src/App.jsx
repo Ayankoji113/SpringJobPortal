@@ -20,8 +20,6 @@ import { ResetPassword } from './pages/ResetPassword';
 import { SavedJobs } from './pages/SavedJobs';
 import { AITools } from './pages/AITools';
 import { EmployerDashboard } from './pages/EmployerDashboard';
-import { AdminDashboard } from './pages/AdminDashboard';
-import { Messages } from './pages/Messages';
 
 function App() {
   return (
@@ -42,7 +40,6 @@ function App() {
 
               {/* Authenticated Routes */}
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
 
               {/* Employer Routes */}
               <Route path="/post-job" element={<ProtectedRoute requireEmployer><PostJob /></ProtectedRoute>} />
@@ -53,9 +50,6 @@ function App() {
               <Route path="/my-applications" element={<ProtectedRoute requireJobSeeker><MyApplications /></ProtectedRoute>} />
               <Route path="/saved-jobs" element={<ProtectedRoute requireJobSeeker><SavedJobs /></ProtectedRoute>} />
               <Route path="/ai-tools" element={<ProtectedRoute requireJobSeeker><AITools /></ProtectedRoute>} />
-
-              {/* Admin Routes */}
-              <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import * as adminService from '../services/adminService';
+import * as dashboardService from '../services/dashboardService';
 import { BarChart3, Briefcase, Users, Eye, TrendingUp } from 'lucide-react';
 
 export const EmployerDashboard = () => {
@@ -9,7 +9,7 @@ export const EmployerDashboard = () => {
     useEffect(() => {
         const fetch = async () => {
             try {
-                const data = await adminService.getEmployerDashboard();
+                const data = await dashboardService.getEmployerDashboard();
                 setStats(data);
             } catch (e) { console.error(e); }
             setLoading(false);

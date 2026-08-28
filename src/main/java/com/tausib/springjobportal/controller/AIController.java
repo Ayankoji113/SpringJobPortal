@@ -1,9 +1,13 @@
 package com.tausib.springjobportal.controller;
 
+import com.tausib.springjobportal.job.JobPost;
+import com.tausib.springjobportal.job.JobService;
+
+import com.tausib.springjobportal.user.UserPrincipal;
+
 import com.tausib.springjobportal.model.*;
 import com.tausib.springjobportal.service.AIService;
 import com.tausib.springjobportal.service.JobApplicationService;
-import com.tausib.springjobportal.service.JobService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,59 +30,41 @@ public class AIController {
     @PreAuthorize("hasRole('JOB_SEEKER')")
     public ResponseEntity<MatchScore> getMatchScore(
             @PathVariable Integer jobId,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal UserPrincipal user
     ) {
-        JobPost job = jobService.getJob(jobId);
-        return ResponseEntity.ok(aiService.calculateMatchScore(user, job));
-    }
-
-    @GetMapping("/cover-letter/{jobId}")
-    @PreAuthorize("hasRole('JOB_SEEKER')")
-    public ResponseEntity<?> generateCoverLetter(
-            @PathVariable Integer jobId,
-            @AuthenticationPrincipal User user
-    ) {
-        JobPost job = jobService.getJob(jobId);
-        String letter = aiService.generateCoverLetter(user, job);
-        return ResponseEntity.ok(Map.of("coverLetter", letter));
+        JobPost job = jobService.getEntityById(jobId);
+        return ResponseEntity.ok(aiService.calculateMatchScore(user.getId(), job));
     }
 
     @GetMapping("/salary-estimate")
     @PreAuthorize("hasRole('JOB_SEEKER')")
-    public ResponseEntity<Map<String, Object>> estimateSalary(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(aiService.estimateSalary(user));
-    }
-
-    @GetMapping("/resume-suggestions")
-    @PreAuthorize("hasRole('JOB_SEEKER')")
-    public ResponseEntity<Map<String, Object>> getResumeSuggestions(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(aiService.suggestImprovements(user));
+    public ResponseEntity<Map<String, Object>> estimateSalary(@AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(aiService.estimateSalary(user.getId()));
     }
 
     @GetMapping("/recommended-jobs")
     @PreAuthorize("hasRole('JOB_SEEKER')")
     public ResponseEntity<List<MatchScore>> getRecommendedJobs(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @RequestParam(defaultValue = "50") double threshold
     ) {
-        List<JobPost> allJobs = jobService.getAllJobs();
-        return ResponseEntity.ok(aiService.getRecommendedJobs(user, allJobs, threshold));
+        List<JobPost> allJobs = jobService.getAllEntities();
+        return ResponseEntity.ok(aiService.getRecommendedJobs(user.getId(), allJobs, threshold));
     }
 
     @PostMapping("/auto-apply")
     @PreAuthorize("hasRole('JOB_SEEKER')")
     public ResponseEntity<?> autoApply(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @RequestParam(defaultValue = "70") double threshold
     ) {
-        List<JobPost> allJobs = jobService.getAllJobs();
-        List<MatchScore> matches = aiService.getRecommendedJobs(user, allJobs, threshold);
+        List<JobPost> allJobs = jobService.getAllEntities();
+        List<MatchScore> matches = aiService.getRecommendedJobs(user.getId(), allJobs, threshold);
 
         int applied = 0;
         for (MatchScore match : matches) {
             try {
-                String coverLetter = aiService.generateCoverLetter(user, match.getJobPost());
-                applicationService.applyToJob(match.getJobPost().getPostId(), user.getId(), coverLetter);
+                applicationService.applyToJob(match.getJobPost().getPostId(), user.getId(), null);
                 applied++;
             } catch (Exception e) {
                 // Skip jobs already applied to or other errors

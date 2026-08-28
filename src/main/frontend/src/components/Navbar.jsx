@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { NotificationBell } from './NotificationBell';
@@ -6,7 +6,7 @@ import { Briefcase, LogOut, User as UserIcon, Menu, X } from 'lucide-react';
 import './Navbar.css';
 
 export const Navbar = () => {
-    const { user, logout, isAuthenticated, isEmployer, isAdmin } = useContext(AuthContext);
+    const { user, logout, isAuthenticated, isEmployer } = useContext(AuthContext);
     const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -32,10 +32,6 @@ export const Navbar = () => {
 
                     {isAuthenticated ? (
                         <>
-                            {isAdmin && (
-                                <Link to="/admin" className="navbar-item" onClick={() => setMenuOpen(false)}>Admin Panel</Link>
-                            )}
-
                             {isEmployer && (
                                 <>
                                     <Link to="/post-job" className="navbar-item" onClick={() => setMenuOpen(false)}>Post Job</Link>
@@ -44,15 +40,13 @@ export const Navbar = () => {
                                 </>
                             )}
 
-                            {!isEmployer && !isAdmin && (
+                            {!isEmployer && (
                                 <>
                                     <Link to="/my-applications" className="navbar-item" onClick={() => setMenuOpen(false)}>My Applications</Link>
                                     <Link to="/saved-jobs" className="navbar-item" onClick={() => setMenuOpen(false)}>Saved</Link>
                                     <Link to="/ai-tools" className="navbar-item" onClick={() => setMenuOpen(false)}>AI Tools</Link>
                                 </>
                             )}
-
-                            <Link to="/messages" className="navbar-item" onClick={() => setMenuOpen(false)}>Messages</Link>
 
                             <div className="navbar-user">
                                 <NotificationBell />

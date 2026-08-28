@@ -1,10 +1,10 @@
 package com.tausib.springjobportal.controller;
 
+import com.tausib.springjobportal.job.JobService;
+
 import com.tausib.springjobportal.dto.DashboardStats;
-import com.tausib.springjobportal.model.User;
-import com.tausib.springjobportal.repo.JobRepo;
+import com.tausib.springjobportal.user.UserPrincipal;
 import com.tausib.springjobportal.service.JobApplicationService;
-import com.tausib.springjobportal.service.JobService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,19 +21,18 @@ public class DashboardController {
 
     private final JobService jobService;
     private final JobApplicationService applicationService;
-    private final JobRepo jobRepo;
 
     @GetMapping("/employer")
-    public ResponseEntity<DashboardStats> getEmployerDashboard(@AuthenticationPrincipal User user) {
-        long totalJobs = jobRepo.countByPostedById(user.getId());
+    public ResponseEntity<DashboardStats> getEmployerDashboard(@AuthenticationPrincipal UserPrincipal user) {
+        long totalJobs = jobService.countByEmployer(user.getId());
 
         // Calculate total views across all employer's jobs
-        long totalViews = jobService.getJobsByEmployer(user.getId()).stream()
+        long totalViews = jobService.getEntitiesByEmployer(user.getId()).stream()
                 .mapToLong(j -> j.getViewCount() != null ? j.getViewCount() : 0)
                 .sum();
 
         // Get total applications for this employer's jobs
-        long totalApps = jobService.getJobsByEmployer(user.getId()).stream()
+        long totalApps = jobService.getEntitiesByEmployer(user.getId()).stream()
                 .mapToLong(j -> applicationService.countByJob(j.getPostId()))
                 .sum();
 

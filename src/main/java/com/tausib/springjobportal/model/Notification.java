@@ -1,5 +1,7 @@
 package com.tausib.springjobportal.model;
 
+import com.tausib.springjobportal.user.User;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

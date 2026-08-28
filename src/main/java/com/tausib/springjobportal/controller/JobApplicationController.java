@@ -2,7 +2,7 @@ package com.tausib.springjobportal.controller;
 
 import com.tausib.springjobportal.model.ApplicationStatus;
 import com.tausib.springjobportal.model.JobApplication;
-import com.tausib.springjobportal.model.User;
+import com.tausib.springjobportal.user.UserPrincipal;
 import com.tausib.springjobportal.service.JobApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +25,7 @@ public class JobApplicationController {
     public ResponseEntity<JobApplication> applyToJob(
             @PathVariable Integer jobId,
             @RequestBody Map<String, String> request,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal UserPrincipal user
     ) {
         String coverLetter = request.get("coverLetter");
         var application = applicationService.applyToJob(jobId, user.getId(), coverLetter);
@@ -34,7 +34,7 @@ public class JobApplicationController {
 
     @GetMapping("/my")
     @PreAuthorize("hasRole('JOB_SEEKER')")
-    public ResponseEntity<List<JobApplication>> getMyApplications(@AuthenticationPrincipal User user) {
+    public ResponseEntity<List<JobApplication>> getMyApplications(@AuthenticationPrincipal UserPrincipal user) {
         var applications = applicationService.getApplicationsByApplicant(user.getId());
         return ResponseEntity.ok(applications);
     }

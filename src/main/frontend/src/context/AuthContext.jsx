@@ -47,7 +47,6 @@ export const AuthProvider = ({ children }) => {
             updateUser,
             isAuthenticated: !!user,
             isEmployer: user?.role === 'EMPLOYER',
-            isAdmin: user?.role === 'ADMIN',
             isJobSeeker: user?.role === 'JOB_SEEKER'
         }}>
             {children}

@@ -16,5 +16,4 @@ public class DashboardStats {
     private long totalApplications;
     private long totalViews;
     private Map<String, Long> applicationsByStatus;
-    private Map<String, Long> jobsByMonth;
 }

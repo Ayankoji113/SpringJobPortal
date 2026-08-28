@@ -1,9 +1,13 @@
 package com.tausib.springjobportal.service;
 
+import com.tausib.springjobportal.job.JobRepo;
+
+import com.tausib.springjobportal.common.mail.EmailService;
+import com.tausib.springjobportal.user.User;
+
 import com.tausib.springjobportal.model.*;
 import com.tausib.springjobportal.repo.JobApplicationRepo;
-import com.tausib.springjobportal.repo.JobRepo;
-import com.tausib.springjobportal.repo.UserRepo;
+import com.tausib.springjobportal.user.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -91,10 +95,6 @@ public class JobApplicationService {
 
     public long countByJob(Integer jobId) {
         return applicationRepo.findByJobPostPostId(jobId).size();
-    }
-
-    public long countAll() {
-        return applicationRepo.count();
     }
 
     public Map<String, Long> getStatusBreakdown(Integer employerId) {

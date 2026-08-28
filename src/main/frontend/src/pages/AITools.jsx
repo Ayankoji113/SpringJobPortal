@@ -1,26 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import * as aiService from '../services/aiService';
-import { Brain, Wand2, DollarSign, FileText, Sparkles, Zap, Loader2 } from 'lucide-react';
+import { Brain, DollarSign, Sparkles, Zap } from 'lucide-react';
 
 export const AITools = () => {
     const { user } = useContext(AuthContext);
-    const [activeTab, setActiveTab] = useState('suggestions');
+    const [activeTab, setActiveTab] = useState('salary');
     const [loading, setLoading] = useState(false);
-    const [suggestions, setSuggestions] = useState(null);
     const [salary, setSalary] = useState(null);
     const [recommended, setRecommended] = useState([]);
     const [autoApplyResult, setAutoApplyResult] = useState(null);
     const [threshold, setThreshold] = useState(60);
-
-    const fetchSuggestions = async () => {
-        setLoading(true);
-        try {
-            const data = await aiService.getResumeSuggestions();
-            setSuggestions(data);
-        } catch (e) { console.error(e); }
-        setLoading(false);
-    };
 
     const fetchSalary = async () => {
         setLoading(true);
@@ -50,13 +40,11 @@ export const AITools = () => {
     };
 
     useEffect(() => {
-        if (activeTab === 'suggestions') fetchSuggestions();
         if (activeTab === 'salary') fetchSalary();
         if (activeTab === 'recommended') fetchRecommended();
     }, [activeTab]);
 
     const tabs = [
-        { id: 'suggestions', label: 'Profile Analysis', icon: <FileText size={16} /> },
         { id: 'salary', label: 'Salary Estimate', icon: <DollarSign size={16} /> },
         { id: 'recommended', label: 'Recommended Jobs', icon: <Sparkles size={16} /> },
         { id: 'autoapply', label: 'Auto Apply', icon: <Zap size={16} /> },
@@ -85,36 +73,6 @@ export const AITools = () => {
             </div>
 
             {loading && <div className="flex justify-center mt-4"><div className="spinner"></div></div>}
-
-            {/* Profile Analysis */}
-            {activeTab === 'suggestions' && suggestions && !loading && (
-                <div className="glass-panel" style={{ padding: '2rem' }}>
-                    <h2 style={{ fontWeight: 700, marginBottom: '1rem' }}>Profile Completeness: {suggestions.profileCompleteness}%</h2>
-                    <div style={{ height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.1)', marginBottom: '1.5rem', overflow: 'hidden' }}>
-                        <div style={{
-                            height: '100%', borderRadius: 4,
-                            width: `${suggestions.profileCompleteness}%`,
-                            background: suggestions.profileCompleteness >= 70 ? 'var(--success-color)' : suggestions.profileCompleteness >= 40 ? 'var(--warning-color)' : 'var(--danger-color)',
-                            transition: 'width 0.5s ease'
-                        }} />
-                    </div>
-                    <span className={`badge ${suggestions.overallRating === 'Excellent' ? 'badge-success' : suggestions.overallRating === 'Good' ? 'badge-primary' : 'badge-warning'}`} style={{ marginBottom: '1rem', display: 'inline-block' }}>
-                        {suggestions.overallRating}
-                    </span>
-
-                    {suggestions.improvements?.length > 0 && (
-                        <>
-                            <h3 style={{ fontWeight: 600, marginTop: '1rem', marginBottom: '0.5rem' }}>Improvement Suggestions:</h3>
-                            {suggestions.improvements.map((imp, i) => (
-                                <div key={i} className="flex items-center gap-2" style={{ padding: '0.6rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <Wand2 size={14} color="var(--warning-color)" />
-                                    <span style={{ fontSize: '0.9rem' }}>{imp}</span>
-                                </div>
-                            ))}
-                        </>
-                    )}
-                </div>
-            )}
 
             {/* Salary Estimate */}
             {activeTab === 'salary' && salary && !loading && (

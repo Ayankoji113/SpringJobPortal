@@ -4,7 +4,7 @@ import * as userService from '../services/userService';
 import { User, Upload, Save, Eye, EyeOff, MapPin, Briefcase, Github, Linkedin, Globe } from 'lucide-react';
 
 export const Profile = () => {
-    const { user, updateUser } = useContext(AuthContext);
+    const { updateUser } = useContext(AuthContext);
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
