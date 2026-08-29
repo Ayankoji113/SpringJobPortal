@@ -1,0 +1,98 @@
+.jp-salary {
+  border: var(--jp-border);
+  border-radius: var(--jp-radius-lg);
+  background: var(--jp-surface);
+  padding: var(--jp-space-5);
+}
+
+.jp-salary__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--jp-space-3);
+  margin-bottom: var(--jp-space-1);
+}
+
+.jp-salary__track {
+  position: relative;
+  height: 6px;
+  border-radius: var(--jp-radius-pill);
+  background: var(--jp-n-150);
+  margin: var(--jp-space-5) 0 var(--jp-space-3);
+}
+
+.jp-salary__band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--jp-accent);
+  border-radius: var(--jp-radius-pill);
+  opacity: 0.85;
+}
+
+.jp-salary__median {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 2px;
+  background: var(--jp-ink);
+}
+
+/* The posting's own advertised range, drawn under the market band. */
+.jp-salary__own {
+  position: absolute;
+  top: 12px;
+  height: 4px;
+  border-radius: var(--jp-radius-pill);
+  background: var(--jp-warning);
+  opacity: 0.9;
+}
+
+.jp-salary__scale {
+  display: flex;
+  justify-content: space-between;
+  color: var(--jp-ink-secondary);
+  margin-top: var(--jp-space-4);
+}
+
+.jp-salary__scale > span {
+  display: flex;
+  flex-direction: column;
+}
+
+.jp-salary__tick {
+  font-size: var(--jp-fs-label);
+  letter-spacing: var(--jp-ls-label);
+  text-transform: uppercase;
+  color: var(--jp-ink-muted);
+}
+
+.jp-salary__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--jp-space-2);
+  color: var(--jp-ink-secondary);
+  margin-top: var(--jp-space-3);
+}
+
+.jp-salary__swatch {
+  width: 14px;
+  height: 4px;
+  border-radius: var(--jp-radius-pill);
+  background: var(--jp-warning);
+}
+
+.jp-salary__narrative {
+  margin-top: var(--jp-space-4);
+  padding-top: var(--jp-space-4);
+  border-top: var(--jp-border);
+}
+
+.jp-salary__narrative dt { margin-bottom: var(--jp-space-1); }
+.jp-salary__narrative dd {
+  margin: 0 0 var(--jp-space-3);
+  font-size: var(--jp-fs-sm);
+  line-height: var(--jp-lh-body);
+  color: var(--jp-ink-secondary);
+}
+.jp-salary__narrative dd:last-child { margin-bottom: 0; }

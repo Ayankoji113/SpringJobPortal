@@ -1,0 +1,24 @@
+/* Left-aligned, no gradient, no centred headline. */
+.jp-hero {
+  padding: var(--jp-space-7) 0 var(--jp-space-8);
+  border-bottom: var(--jp-border);
+  max-width: 46ch;
+}
+
+.jp-hero__title {
+  font-family: var(--jp-font-display);
+  font-weight: var(--jp-fw-bold);
+  font-size: clamp(1.9rem, 5vw, 2.75rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.jp-hero__body {
+  margin-top: var(--jp-space-4);
+  color: var(--jp-ink-secondary);
+  max-width: 56ch;
+}
+
+.jp-hero__actions { margin-top: var(--jp-space-5); flex-wrap: wrap; }
+
+.jp-home__list { padding-top: var(--jp-space-6); }

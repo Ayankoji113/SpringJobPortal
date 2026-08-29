@@ -43,6 +43,38 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
+    /**
+     * Spring Security's AccessDeniedException is a RuntimeException, so without this it fell
+     * through to the handler below and every @PreAuthorize rejection was reported as
+     * 400 Bad Request — telling the caller their request was malformed when in fact it was
+     * refused. Authorization failures must read as 403.
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<Map<String, String>> handleAccessDenied(
+            org.springframework.security.access.AccessDeniedException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "You do not have permission to do that.");
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    /** Bad credentials and friends are 401, not 400. */
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<Map<String, String>> handleAuthentication(
+            org.springframework.security.core.AuthenticationException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Email or password is incorrect.");
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    /** A database or serialization failure is our fault, not the caller's. */
+    @ExceptionHandler({ org.springframework.dao.DataAccessException.class,
+                        org.springframework.http.converter.HttpMessageConversionException.class })
+    public ResponseEntity<Map<String, String>> handleServerSide(Exception ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "The server could not complete that request.");
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
         Map<String, String> error = new HashMap<>();

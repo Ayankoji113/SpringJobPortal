@@ -1,0 +1,48 @@
+.jp-joblist {
+  display: grid;
+  grid-template-columns: var(--jp-rail-width) 1fr;
+  gap: var(--jp-space-6);
+  align-items: start;
+}
+
+.jp-joblist__rail {
+  position: sticky;
+  top: calc(var(--jp-header-height) + var(--jp-space-5));
+}
+
+.jp-filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--jp-space-4);
+}
+
+.jp-filters__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--jp-space-3);
+}
+
+.jp-filters__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--jp-space-2);
+  padding-top: var(--jp-space-2);
+  border-top: var(--jp-border);
+}
+
+/* The rail is the desktop presentation; the trigger button is the mobile one. */
+.jp-filters__trigger { display: none; }
+
+.jp-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--jp-space-4);
+  margin-top: var(--jp-space-4);
+}
+
+@media (max-width: 900px) {
+  .jp-joblist { grid-template-columns: 1fr; }
+  .jp-joblist__rail { display: none; }
+  .jp-filters__trigger { display: inline-flex; }
+}

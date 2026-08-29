@@ -30,9 +30,13 @@ public interface JobRepo extends JpaRepository<JobPost, Integer> {
     void incrementViewCount(@Param("postId") Integer postId);
 
     @Query("SELECT j FROM JobPost j WHERE j.isActive = true AND j.isApproved = true "
-            + "AND (:keyword IS NULL OR LOWER(j.postProfile) LIKE LOWER(CONCAT('%', :keyword, '%')) "
-            + "                      OR LOWER(j.postDesc) LIKE LOWER(CONCAT('%', :keyword, '%'))) "
-            + "AND (:location IS NULL OR LOWER(j.location) LIKE LOWER(CONCAT('%', :location, '%'))) "
+            // The string parameters are cast explicitly: when they arrive null, Postgres cannot
+            // infer a type inside lower() and fails with "function lower(bytea) does not exist".
+            + "AND (CAST(:keyword AS string) IS NULL "
+            + "     OR LOWER(j.postProfile) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) "
+            + "     OR LOWER(j.postDesc) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))) "
+            + "AND (CAST(:location AS string) IS NULL "
+            + "     OR LOWER(j.location) LIKE LOWER(CONCAT('%', CAST(:location AS string), '%'))) "
             + "AND (:jobType IS NULL OR j.jobType = :jobType) "
             + "AND (:isRemote IS NULL OR j.isRemote = :isRemote) "
             + "AND (:minExp IS NULL OR j.reqExperience >= :minExp) "

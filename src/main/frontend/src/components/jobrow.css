@@ -1,0 +1,90 @@
+/* A list is hairlines and rows — no cards, no shadows. */
+.jp-list {
+  border: var(--jp-border);
+  border-radius: var(--jp-radius-lg);
+  background: var(--jp-surface);
+  overflow: hidden;
+}
+
+.jp-jobrow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--jp-space-4);
+  padding: var(--jp-space-4) var(--jp-space-5);
+  border-bottom: var(--jp-border);
+  transition: background-color var(--jp-duration) var(--jp-ease);
+}
+
+.jp-list > .jp-jobrow:last-child { border-bottom: 0; }
+
+.jp-jobrow:hover { background: var(--jp-surface-hover); }
+
+.jp-jobrow__main { min-width: 0; flex: 1; }
+
+.jp-jobrow__link {
+  color: var(--jp-ink);
+  text-decoration: none;
+}
+
+.jp-jobrow__link:hover { color: var(--jp-accent); text-decoration: none; }
+
+/* The whole row is a click target, without nesting interactive elements. */
+.jp-jobrow__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.jp-jobrow { position: relative; }
+
+.jp-jobrow__meta { margin-top: var(--jp-space-1); }
+
+.jp-jobrow__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--jp-space-1);
+  margin-top: var(--jp-space-2);
+  list-style: none;
+}
+
+.jp-tag {
+  font-size: var(--jp-fs-label);
+  font-family: var(--jp-font-mono);
+  color: var(--jp-ink-secondary);
+  background: var(--jp-n-100);
+  border: var(--jp-border);
+  border-radius: var(--jp-radius-xs);
+  padding: 1px var(--jp-space-2);
+}
+
+.jp-jobrow__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Interactive children must sit above the row-wide link overlay. */
+.jp-jobrow .jp-btn,
+.jp-jobrow .jp-badge,
+.jp-jobrow select {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 640px) {
+  .jp-jobrow {
+    flex-wrap: wrap;
+    padding: var(--jp-space-4) var(--jp-gutter-sm);
+    gap: var(--jp-space-3);
+  }
+
+  .jp-jobrow__side {
+    align-items: flex-start;
+    text-align: left;
+    flex-direction: row;
+    gap: var(--jp-space-3);
+    width: 100%;
+  }
+}

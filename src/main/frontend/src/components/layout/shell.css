@@ -1,0 +1,151 @@
+.jp-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ------------------------------------------------------------------ header
+   One hairline, no shadow. */
+.jp-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--jp-z-header);
+  background: var(--jp-surface);
+  border-bottom: var(--jp-border);
+}
+
+.jp-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--jp-space-5);
+  height: var(--jp-header-height);
+}
+
+.jp-wordmark {
+  font-family: var(--jp-font-display);
+  font-weight: var(--jp-fw-bold);
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+  color: var(--jp-ink);
+  text-decoration: none;
+}
+
+.jp-wordmark:hover { text-decoration: none; color: var(--jp-accent); }
+
+.jp-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--jp-space-4);
+  margin-right: auto;
+}
+
+.jp-nav__link {
+  font-size: var(--jp-fs-sm);
+  color: var(--jp-ink-muted);
+  text-decoration: none;
+  padding: var(--jp-space-1) 0;
+  border-bottom: 2px solid transparent;
+  transition: color var(--jp-duration) var(--jp-ease);
+}
+
+.jp-nav__link:hover { color: var(--jp-ink); text-decoration: none; }
+
+/* Active state is a 2px accent underline, not a filled pill. */
+.jp-nav__link--active {
+  color: var(--jp-ink);
+  border-bottom-color: var(--jp-accent);
+  font-weight: var(--jp-fw-medium);
+}
+
+.jp-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--jp-space-2);
+  margin-left: auto;
+}
+
+.jp-header__who {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jp-space-2);
+  color: var(--jp-ink-secondary);
+}
+
+.jp-header__toggle { display: none; }
+
+.jp-bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--jp-radius-sm);
+  color: var(--jp-ink-muted);
+}
+
+.jp-bell:hover { background: var(--jp-surface-hover); color: var(--jp-ink); text-decoration: none; }
+
+.jp-bell__dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--jp-radius-pill);
+  background: var(--jp-accent);
+  border: 2px solid var(--jp-surface);
+}
+
+.jp-main { flex: 1; }
+
+.jp-footer {
+  border-top: var(--jp-border);
+  margin-top: var(--jp-space-8);
+  background: var(--jp-surface);
+}
+
+.jp-footer__inner {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--jp-space-4);
+  padding-block: var(--jp-space-5);
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------- responsive */
+@media (max-width: 900px) {
+  .jp-header__who { display: none; }
+}
+
+@media (max-width: 720px) {
+  .jp-header__toggle { display: inline-flex; }
+
+  .jp-nav {
+    display: none;
+    position: absolute;
+    top: var(--jp-header-height);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: var(--jp-surface);
+    border-bottom: var(--jp-border);
+    padding: var(--jp-space-2) var(--jp-gutter-sm) var(--jp-space-4);
+  }
+
+  .jp-nav--open { display: flex; }
+
+  .jp-nav__link {
+    padding: var(--jp-space-3) 0;
+    border-bottom: var(--jp-border);
+    border-left: 2px solid transparent;
+  }
+
+  .jp-nav__link--active {
+    border-bottom-color: var(--jp-line);
+    border-left-color: var(--jp-accent);
+    padding-left: var(--jp-space-3);
+  }
+}

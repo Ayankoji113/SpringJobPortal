@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../context/auth-context';
 
 export const ProtectedRoute = ({ children, requireEmployer, requireJobSeeker }) => {
     const { isAuthenticated, isEmployer, isJobSeeker } = useContext(AuthContext);

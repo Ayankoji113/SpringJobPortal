@@ -1,6 +1,7 @@
 package com.tausib.springjobportal.notification;
 
 import com.tausib.springjobportal.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,10 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    /* Never serialised: notifications are always fetched for the current user, and Jackson
+       cannot render the uninitialised lazy proxy — it failed the whole response with
+       "Type definition error: ByteBuddyInterceptor". */
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

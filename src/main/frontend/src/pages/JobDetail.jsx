@@ -1,129 +1,181 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import { LoadingSpinner } from '../components/LoadingSpinner';
+import React, { useContext, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { Bookmark, BookmarkCheck } from 'lucide-react';
 import * as jobService from '../services/jobService';
-import { Briefcase, Clock, Building, ArrowLeft } from 'lucide-react';
+import { errorMessage } from '../services/api';
+import { AuthContext } from '../context/auth-context';
+import { SalaryPanel } from '../components/SalaryPanel';
+import { Badge, Button, EmptyState, Modal, Skeleton, Textarea } from '../components/ui';
+import { useToast } from '../components/ui/toast-context';
+import { fullDate, jobTypeLabel, salaryRange } from '../lib/format';
+import './jobdetail.css';
 
-export const JobDetail = () => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const [job, setJob] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [applying, setApplying] = useState(false);
-    const [coverLetter, setCoverLetter] = useState('');
-    const [showApply, setShowApply] = useState(false);
-    const [message, setMessage] = useState(null);
+export function JobDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated, isJobSeeker } = useContext(AuthContext);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [applyOpen, setApplyOpen] = useState(false);
 
-    const { isAuthenticated, isEmployer } = useContext(AuthContext);
+  const { data: job, isPending, isError, error } = useQuery({
+    queryKey: ['job', id],
+    queryFn: () => jobService.getJobById(id),
+  });
 
-    useEffect(() => {
-        const fetchJob = async () => {
-            try {
-                const data = await jobService.getJobById(id);
-                setJob(data);
-            } catch (error) {
-                setMessage({ type: 'danger', text: 'Job not found' });
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchJob();
-    }, [id]);
+  const { data: savedState } = useQuery({
+    queryKey: ['is-saved', id],
+    queryFn: () => jobService.isJobSaved(id),
+    enabled: isJobSeeker,
+    retry: false,
+  });
+  const saved = Boolean(savedState?.saved);
 
-    const handleApply = async (e) => {
-        e.preventDefault();
-        if (!isAuthenticated) {
-            navigate('/login');
-            return;
-        }
-        
-        setApplying(true);
-        try {
-            await jobService.applyToJob(id, coverLetter);
-            setMessage({ type: 'success', text: 'Application submitted successfully!' });
-            setShowApply(false);
-        } catch (error) {
-            setMessage({ type: 'danger', text: error.response?.data?.error || 'Failed to apply. You may have already applied.' });
-        } finally {
-            setApplying(false);
-        }
-    };
+  const toggleSave = useMutation({
+    mutationFn: () => (saved ? jobService.unsaveJob(id) : jobService.saveJob(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['is-saved', id] });
+      queryClient.invalidateQueries({ queryKey: ['saved-jobs'] });
+      toast(saved ? 'Removed from saved jobs' : 'Saved', 'success');
+    },
+    onError: (err) => toast(errorMessage(err), 'error'),
+  });
 
-    if (loading) return <LoadingSpinner />;
-    if (!job) return <div className="text-center mt-4">Job not found</div>;
+  const { register, handleSubmit, watch, reset, formState: { errors, isSubmitting } } = useForm({
+    mode: 'onBlur',
+    defaultValues: { coverLetter: '' },
+  });
+  const coverLetter = watch('coverLetter') || '';
 
+  const apply = useMutation({
+    mutationFn: (values) => jobService.applyToJob(id, values.coverLetter),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-applications'] });
+      setApplyOpen(false);
+      reset();
+      toast('Application submitted', 'success');
+      navigate('/my-applications');
+    },
+    onError: (err) => toast(errorMessage(err, 'Could not submit your application.'), 'error'),
+  });
+
+  if (isPending) {
     return (
-        <div className="job-detail-container" style={{maxWidth: '800px', margin: '0 auto'}}>
-            <button onClick={() => navigate(-1)} className="btn btn-secondary mb-4">
-                <ArrowLeft size={16} /> Back
-            </button>
-
-            {message && (
-                <div className={`badge badge-${message.type} w-full mb-4`} style={{padding: '1rem', display: 'block', fontSize: '1rem'}}>
-                    {message.text}
-                </div>
-            )}
-
-            <div className="glass-panel" style={{padding: '2rem'}}>
-                <div className="flex justify-between items-start mb-4">
-                    <div>
-                        <h1 className="font-bold mb-1" style={{fontSize: '2.5rem'}}>{job.postProfile}</h1>
-                        <div className="flex items-center gap-4 text-secondary mt-2">
-                            <span className="flex items-center gap-1"><Building size={16}/> {job.postedBy?.fullName || 'Company'}</span>
-                            <span className="flex items-center gap-1"><Briefcase size={16}/> {job.reqExperience} years exp</span>
-                            <span className="flex items-center gap-1"><Clock size={16}/> Posted {job.postedDate ? new Date(job.postedDate).toLocaleDateString() : 'Recently'}</span>
-                        </div>
-                    </div>
-                    
-                    {!isEmployer && !showApply && (
-                        <button onClick={() => setShowApply(true)} className="btn btn-primary btn-lg">Apply Now</button>
-                    )}
-                </div>
-
-                <div className="mt-4">
-                    <h3 className="font-bold text-xl mb-2">Technologies</h3>
-                    <div className="flex gap-2 flex-wrap">
-                        {job.postTechStack?.map((tech, i) => (
-                            <span key={i} className="badge badge-primary">{tech}</span>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="mt-4 pt-4" style={{borderTop: '1px solid rgba(255,255,255,0.1)'}}>
-                    <h3 className="font-bold text-xl mb-2">Job Description</h3>
-                    <div className="text-secondary" style={{whiteSpace: 'pre-wrap'}}>
-                        {job.postDesc}
-                    </div>
-                </div>
-
-                {showApply && (
-                    <div className="mt-4 pt-4" style={{borderTop: '1px solid rgba(255,255,255,0.1)'}}>
-                        <h3 className="font-bold text-xl mb-2">Submit Application</h3>
-                        <form onSubmit={handleApply}>
-                            <div className="form-group">
-                                <label className="form-label">Cover Letter</label>
-                                <textarea 
-                                    className="form-input" 
-                                    value={coverLetter}
-                                    onChange={(e) => setCoverLetter(e.target.value)}
-                                    placeholder="Explain why you are a great fit for this role..."
-                                    required
-                                    rows={5}
-                                ></textarea>
-                            </div>
-                            <div className="flex gap-2">
-                                <button type="submit" className="btn btn-primary" disabled={applying}>
-                                    {applying ? 'Submitting...' : 'Submit Application'}
-                                </button>
-                                <button type="button" className="btn btn-secondary" onClick={() => setShowApply(false)}>
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                )}
-            </div>
-        </div>
+      <div className="jp-container jp-page">
+        <Skeleton width="55%" height={30} />
+        <Skeleton width="35%" height={13} style={{ marginTop: 14 }} />
+        <Skeleton width="100%" height={180} style={{ marginTop: 32, borderRadius: 8 }} />
+      </div>
     );
-};
+  }
+
+  if (isError) {
+    return (
+      <div className="jp-container jp-page">
+        <EmptyState
+          title="Job not found"
+          body={errorMessage(error, 'This posting may have been removed.')}
+          action={<Button variant="primary" onClick={() => navigate('/jobs')}>Back to jobs</Button>}
+        />
+      </div>
+    );
+  }
+
+  const meta = [
+    job.company?.name || job.postedBy?.fullName,
+    job.isRemote ? 'Remote' : job.location,
+    jobTypeLabel(job.jobType),
+    job.reqExperience != null && `${job.reqExperience} years experience`,
+  ].filter(Boolean);
+
+  return (
+    <div className="jp-container jp-page">
+      <p className="jp-sm"><Link to="/jobs">← All jobs</Link></p>
+
+      <div className="jp-detail">
+        <article className="jp-detail__main">
+          <header className="jp-detail__head">
+            <h1 className="jp-display">{job.postProfile}</h1>
+            <p className="jp-sm jp-muted">{meta.join(' · ')}</p>
+            <div className="jp-detail__facts">
+              <span className="jp-data">{salaryRange(job.salaryMin, job.salaryMax)}</span>
+              {job.isFeatured && <Badge tone="accent">Featured</Badge>}
+              <span className="jp-sm jp-muted">Posted {fullDate(job.postedDate)}</span>
+            </div>
+          </header>
+
+          {job.postTechStack?.length > 0 && (
+            <section className="jp-detail__section">
+              <h2 className="jp-label">Tech stack</h2>
+              <ul className="jp-detail__tags">
+                {job.postTechStack.map((tech) => <li key={tech} className="jp-tag">{tech}</li>)}
+              </ul>
+            </section>
+          )}
+
+          <section className="jp-detail__section">
+            <h2 className="jp-label">Description</h2>
+            <p className="jp-detail__desc">{job.postDesc || 'No description provided.'}</p>
+          </section>
+        </article>
+
+        <aside className="jp-detail__rail">
+          <div className="jp-detail__cta">
+            {isJobSeeker && (
+              <>
+                <Button variant="primary" block size="lg" onClick={() => setApplyOpen(true)}>Apply now</Button>
+                <Button block onClick={() => toggleSave.mutate()} disabled={toggleSave.isPending}>
+                  {saved ? <BookmarkCheck size={15} aria-hidden="true" /> : <Bookmark size={15} aria-hidden="true" />}
+                  {saved ? 'Saved' : 'Save job'}
+                </Button>
+              </>
+            )}
+            {!isAuthenticated && (
+              <>
+                <Button variant="primary" block size="lg" onClick={() => navigate('/login')}>Sign in to apply</Button>
+                <p className="jp-sm jp-muted">You need a job seeker account to apply.</p>
+              </>
+            )}
+          </div>
+
+          <SalaryPanel jobId={job.postId} salaryMin={job.salaryMin} salaryMax={job.salaryMax} />
+        </aside>
+      </div>
+
+      <Modal
+        open={applyOpen}
+        onOpenChange={setApplyOpen}
+        title={`Apply — ${job.postProfile}`}
+        description="Your profile and resume are sent with the application."
+        footer={
+          <>
+            <Button onClick={() => setApplyOpen(false)}>Cancel</Button>
+            <Button
+              variant="primary"
+              onClick={handleSubmit((values) => apply.mutate(values))}
+              disabled={isSubmitting || apply.isPending}
+            >
+              {apply.isPending ? 'Submitting…' : 'Submit application'}
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleSubmit((values) => apply.mutate(values))}>
+          <Textarea
+            label="Cover letter"
+            optional
+            rows={7}
+            placeholder="Why you are a good fit for this role…"
+            hint={`${coverLetter.length} / 2000 characters`}
+            error={errors.coverLetter?.message}
+            {...register('coverLetter', {
+              maxLength: { value: 2000, message: 'Keep the cover letter under 2000 characters.' },
+            })}
+          />
+        </form>
+      </Modal>
+    </div>
+  );
+}

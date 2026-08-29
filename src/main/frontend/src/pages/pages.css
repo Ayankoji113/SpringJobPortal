@@ -1,0 +1,104 @@
+/* Shared dense-table styling for the dashboards. */
+.jp-table-wrap { overflow-x: auto; }
+
+.jp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--jp-fs-sm);
+}
+
+.jp-table th,
+.jp-table td {
+  text-align: left;
+  padding: var(--jp-space-3) var(--jp-space-4);
+  border-bottom: var(--jp-border);
+  vertical-align: middle;
+}
+
+.jp-table th {
+  font-family: var(--jp-font-mono);
+  font-size: var(--jp-fs-label);
+  letter-spacing: var(--jp-ls-label);
+  text-transform: uppercase;
+  color: var(--jp-ink-muted);
+  font-weight: var(--jp-fw-medium);
+  white-space: nowrap;
+}
+
+.jp-table tbody tr:last-child td { border-bottom: 0; }
+.jp-table tbody tr:hover { background: var(--jp-surface-hover); }
+
+.jp-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--jp-space-4);
+  margin-bottom: var(--jp-space-6);
+}
+
+.jp-stat {
+  border: var(--jp-border);
+  border-radius: var(--jp-radius-lg);
+  background: var(--jp-surface);
+  padding: var(--jp-space-4) var(--jp-space-5);
+}
+
+.jp-stat__value {
+  font-family: var(--jp-font-display);
+  font-size: var(--jp-fs-display);
+  line-height: var(--jp-lh-display);
+  letter-spacing: var(--jp-ls-display);
+  font-weight: var(--jp-fw-bold);
+  font-variant-numeric: tabular-nums;
+  display: block;
+  margin-top: var(--jp-space-2);
+}
+
+.jp-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--jp-space-4);
+}
+
+.jp-form-grid--full { grid-column: 1 / -1; }
+
+.jp-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--jp-space-4);
+  max-width: 720px;
+}
+
+.jp-form__actions {
+  display: flex;
+  gap: var(--jp-space-3);
+  padding-top: var(--jp-space-4);
+  border-top: var(--jp-border);
+}
+
+.jp-chips { display: flex; flex-wrap: wrap; gap: var(--jp-space-2); }
+
+.jp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jp-space-1);
+  background: var(--jp-n-100);
+  border: var(--jp-border);
+  border-radius: var(--jp-radius-xs);
+  padding: 2px var(--jp-space-2);
+  font-size: var(--jp-fs-sm);
+}
+
+.jp-chip button {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--jp-ink-muted);
+  padding: 0;
+  line-height: 1;
+}
+
+.jp-chip button:hover { color: var(--jp-danger); }
+
+@media (max-width: 640px) {
+  .jp-form-grid { grid-template-columns: 1fr; }
+}

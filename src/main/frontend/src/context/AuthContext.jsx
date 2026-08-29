@@ -1,17 +1,11 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import * as authService from '../services/authService';
-
-export const AuthContext = createContext();
+import { AuthContext } from './auth-context';
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const currentUser = authService.getCurrentUser();
-        setUser(currentUser);
-        setLoading(false);
-    }, []);
+    // Read once during the initial render rather than in an effect, which would
+    // render null first and then immediately set state.
+    const [user, setUser] = useState(() => authService.getCurrentUser());
 
     const login = async (email, password) => {
         const data = await authService.login(email, password);
@@ -35,8 +29,6 @@ export const AuthProvider = ({ children }) => {
         setUser(updated);
         localStorage.setItem('user', JSON.stringify(updated));
     };
-
-    if (loading) return <div className="flex justify-center mt-4"><div className="spinner"></div></div>;
 
     return (
         <AuthContext.Provider value={{
