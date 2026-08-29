@@ -1,7 +1,16 @@
 # Monolith → Microservices Migration Plan
 
 **Subject:** `com.tausib.springjobportal` (Spring Boot 3.4.3, Java 21, PostgreSQL, React 19)
-**Status:** Analysis only. No source file has been modified.
+**Status:** **ABANDONED — not being followed.** On 2026-08-29 the decision was taken to stay with a
+modular monolith, so no part of this plan will be executed. It is kept only because §1 (inventory)
+and §2 (dependency graph) record analysis that was expensive to produce.
+
+It also describes a codebase that no longer exists: written against 13 entities (now 8), WebSocket
+messaging, `AdminController`, `JobAlert`, and the old `model/ repo/ service/ controller/ dto/`
+layout, all of which were removed in phases 2 and 3 of the layered-architecture refactor. Read
+`docs/ARCHITECTURE.md` for the current shape; nothing below is being kept in sync.
+
+**Original status:** Analysis only. No source file has been modified.
 **Date:** 2026-08-28
 
 ---

@@ -5,8 +5,15 @@
 **Date:** 2026-08-28
 
 Scope note: this describes the current working tree, which already has direct messaging and the
-admin dashboard removed. Where the README or `CLAUDE.md` still describe those features, or describe
-WebSockets, they are describing code that is no longer present.
+admin dashboard removed. Where the README still describes those features, or describes WebSockets,
+it is describing code that is no longer present.
+
+**Staleness, 2026-08-29.** §1, §2, §5 and §8 match the post-restructure tree (phase 3: package-by-
+feature). §3, §4, §6 and §7 were written before the restructure — the flows are unchanged but the
+class names, packages, and request/response shapes for `user`, `company` and `job` are not
+(those three modules now take and return DTOs, not entities). §9 is likewise pre-restructure: parts
+of it are already fixed (see the note at the head of that section). Phase 6 re-audits from scratch
+into `docs/AUDIT.md`; nothing here is being kept in sync in the meantime.
 
 ---
 
@@ -15,16 +22,26 @@ WebSockets, they are describing code that is no longer present.
 ```
 com.tausib.springjobportal
 ├── SpringJobPortalApplication      @SpringBootApplication @EnableAsync
-├── aop/          LoggingAspect, PerformanceMoniterAspect, ValidationAspect
-├── config/       ApplicationConfig, JwtService, JwtAuthFilter, SecurityConfig, SwaggerConfig
-├── controller/   AI, Auth, Company, Dashboard, File, JobApplication, JobRest, Notification, User
-├── dto/          8 request/response shapes (auth, company, search, profile, dashboard)
-├── exception/    GlobalExceptionHandler, ResourceNotFoundException
-├── model/        9 entities + 4 enums
-├── repo/         9 Spring Data JPA interfaces
-└── service/      AI, Company, Email, FileStorage, JobApplication, Job, Notification,
-                  RefreshToken, User
+├── common/       cross-cutting only — aop/ (2 aspects), config/ (Swagger),
+│                 exception/ (handler + 2 exceptions), mail/ (EmailService),
+│                 security/ (Jwt*, SecurityConfig, SecurityBeansConfig)
+├── user/         User, RefreshToken, UserPrincipal, UserRole, repos, AuthService,
+│                 UserService, RefreshTokenService, Auth/User controllers, mapper, dto/
+├── company/      Company + repo, service, controller, mapper, dto/
+├── job/          JobPost, SavedJob, JobType, repos, JobService, SavedJobService,
+│                 JobController, mapper, dto/
+├── application/  JobApplication, ApplicationStatus, repo, service, controller
+├── notification/ Notification, NotificationType, repo, service, controller
+├── matching/     MatchScore, repo, AIService, AIController
+├── dashboard/    DashboardController, dto/DashboardStats
+└── file/         FileStorageService, FileController
 ```
+
+Each feature package owns its entity, repository, service, controller and DTOs; `common/` holds
+only what every feature needs. Dependencies point one way — features depend on `common` and on
+`user`, never the reverse. `matching/` is top-level rather than inside `job/` because
+`AIController.autoApply` calls `JobApplicationService` while `application/` needs `JobPost`;
+nesting it would make `job` ↔ `application` circular.
 
 The React frontend lives at `src/main/frontend/` — inside the Maven source tree but not a Maven
 module. It is joined to the backend only by the Docker build.
@@ -169,27 +186,13 @@ No unique constraint on `(user_id, job_post_id)` despite being used as a cache k
 | `expiryDate` | `LocalDateTime` | `not null` |
 | `revoked` | `Boolean` | default `false` |
 
-### `JobAlert` → `job_alerts`
-
-Persisted and mapped, but **no service, controller, or repository call touches it**. See §9.6.
-
-| Field | Type | Notes |
-|---|---|---|
-| `id` | `Integer` | `@Id`, `IDENTITY` |
-| `user` | `User` | `@ManyToOne(LAZY)` → `user_id`, `not null` |
-| `keywords`, `location` | `String` | |
-| `jobType` | `JobType` | `@Enumerated(STRING)` |
-| `minExperience`, `maxExperience` | `Integer` | |
-| `isActive` | `Boolean` | default `true` |
-| `createdAt` | `LocalDateTime` | `@CreationTimestamp` |
-
 ### Enums
 
 - `UserRole` — `EMPLOYER`, `JOB_SEEKER`, `ADMIN`
 - `JobType` — `FULL_TIME`, `PART_TIME`, `CONTRACT`, `INTERNSHIP`, `FREELANCE`
 - `ApplicationStatus` — `PENDING`, `REVIEWED`, `ACCEPTED`, `REJECTED`
 - `NotificationType` — `APPLICATION_RECEIVED`, `APPLICATION_STATUS_CHANGED`, `JOB_ALERT`,
-  `PROFILE_VIEWED`, `SYSTEM_ANNOUNCEMENT`
+  `PROFILE_VIEWED`, `SYSTEM_ANNOUNCEMENT` (only the first two are ever emitted)
 
 ---
 
@@ -320,7 +323,7 @@ projection as filtered by `@JsonIgnore` / `@JsonIgnoreProperties`.
 | POST | `/forgot-password` | public | `PasswordResetRequest` `{email}` (`@Valid`) | `{message}` (always identical, by design) |
 | POST | `/reset-password` | public | `NewPasswordRequest` `{token, newPassword}` (`@Valid`) | `{message}` or `400 {error}` |
 
-### `JobRestController` — `/api/jobs`
+### `JobController` (was `JobRestController`) — `/api/jobs`
 
 `SecurityConfig` permits **all** `GET /api/jobs/**` without authentication.
 
@@ -437,7 +440,7 @@ graph TD
     UserC[UserController] --> UserService
     UserC --> FileStorageService
     AppC[JobApplicationController] --> JobApplicationService
-    JobC[JobRestController] --> JobService
+    JobC[JobController] --> JobService
     NotifC[NotificationController] --> NotificationService
     FileC[FileController] --> FileStorageService
 
@@ -479,15 +482,12 @@ an explicit boundary. See §9.6.
 
 ### AOP layer
 
-Three aspects in `aop/` weave into **both** `controller..*` and `service..*`:
+Two aspects in `common/aop/` weave into **both** `controller..*` and `service..*`:
 
 - `LoggingAspect` — `@Before` / `@After` / `@AfterReturning` / `@AfterThrowing`. `@AfterReturning`
   logs the entire returned object at INFO, so every `User` and `JobApplication` returned by any layer
   is written to the log in `toString()` form.
-- `PerformanceMoniterAspect` — `@Around`, logs elapsed ms.
-- `ValidationAspect` — `@Around` on `JobService.updateJob(..) && args(postid)`, intended to flip a
-  negative `postid` to its absolute value. The pointcut binds a single `int` argument but the real
-  signature is `updateJob(JobPost)`, so the advice never matches and the rewrite never fires.
+- `PerformanceMonitorAspect` — `@Around`, logs elapsed ms.
 
 ---
 
@@ -645,6 +645,17 @@ per hour against the database regardless of activity.
 
 ## 9. Architectural problems
 
+> **Written pre-restructure (2026-08-28).** Phase 3 already fixed a number of these in the `user`,
+> `company` and `job` modules: `AuthService` now exists and `AuthController` is thin;
+> `UserController.getUserById` / `toggleVisibility` delegate to `UserService` and the visibility
+> toggle persists; `JobController` takes `JobRequest` DTOs and `JobService.update` patches instead
+> of overwriting; saved-jobs moved out to `SavedJobService`; ownership checks were added to job
+> update/delete and company logo upload; `GET /api/jobs/saved` and `/{id}/is-saved` now require
+> authentication; `JobAlert`, `ValidationAspect` and `GET /api/jobs/load` are gone; the `user`,
+> `company` and `job` services are `@Transactional`. Everything below still applies to
+> `application/`, `notification/`, `matching/`, `dashboard/` and `file/`, which phase 3 moved but
+> did not rework. Phase 6 re-verifies the whole list into `docs/AUDIT.md`.
+
 ### 9.1 Circular dependencies between services
 
 **None at the bean level.** The service graph in §5 is a DAG:
@@ -787,8 +798,12 @@ Two weaker coupling problems do exist:
 - **No migrations.** `ddl-auto=update` is the only schema mechanism. It never drops or alters
   columns, so tables and columns from the removed messaging and admin features still exist in any
   database that previously ran that code.
-- **Secrets committed.** `application.properties` holds a real-looking Postgres password
-  (`tausibpatel&7796`), the JWT signing key, and SMTP settings. There is a single profile — no
+- **Secrets committed.** `application.properties` held a real Postgres password, the JWT signing
+  key, and SMTP settings. Fixed in the working tree on 2026-08-29: both are now
+  `${SPRING_DATASOURCE_PASSWORD}` / `${JWT_SECRET}` placeholders, the JWT key was rotated, and real
+  values live in the git-ignored `config/application.properties`. **The old values remain in commit
+  `88b3dad` and are pushed** — rotating the database password at the server is the part that
+  actually closes it. There is a single profile — no
   `application-dev` / `application-prod` split, and no `.env.example`.
 - **Almost no transaction boundaries.** Only `JobService.unsaveJob` and
   `RefreshTokenService.revokeAllUserTokens` are `@Transactional`. `applyToJob` (save + notify +

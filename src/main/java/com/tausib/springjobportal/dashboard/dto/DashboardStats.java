@@ -1,4 +1,4 @@
-package com.tausib.springjobportal.dto;
+package com.tausib.springjobportal.dashboard.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,8 +1,6 @@
-package com.tausib.springjobportal.controller;
+package com.tausib.springjobportal.notification;
 
-import com.tausib.springjobportal.model.Notification;
 import com.tausib.springjobportal.user.UserPrincipal;
-import com.tausib.springjobportal.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

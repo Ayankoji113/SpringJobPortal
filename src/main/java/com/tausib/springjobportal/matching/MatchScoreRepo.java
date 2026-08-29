@@ -1,6 +1,5 @@
-package com.tausib.springjobportal.repo;
+package com.tausib.springjobportal.matching;
 
-import com.tausib.springjobportal.model.MatchScore;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package com.tausib.springjobportal.model;
+package com.tausib.springjobportal.application;
 
 import com.tausib.springjobportal.job.JobPost;
 

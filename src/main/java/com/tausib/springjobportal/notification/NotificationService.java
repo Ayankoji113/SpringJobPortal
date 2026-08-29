@@ -1,9 +1,6 @@
-package com.tausib.springjobportal.service;
+package com.tausib.springjobportal.notification;
 
-import com.tausib.springjobportal.model.Notification;
-import com.tausib.springjobportal.model.NotificationType;
 import com.tausib.springjobportal.user.User;
-import com.tausib.springjobportal.repo.NotificationRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

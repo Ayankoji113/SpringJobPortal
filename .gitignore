@@ -12,6 +12,7 @@ HELP.md
 node_modules/
 
 # Secrets / local config
+/config/
 .env
 .env.local
 .env.*.local

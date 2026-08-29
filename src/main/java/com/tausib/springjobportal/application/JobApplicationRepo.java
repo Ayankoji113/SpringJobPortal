@@ -1,6 +1,5 @@
-package com.tausib.springjobportal.repo;
+package com.tausib.springjobportal.application;
 
-import com.tausib.springjobportal.model.JobApplication;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

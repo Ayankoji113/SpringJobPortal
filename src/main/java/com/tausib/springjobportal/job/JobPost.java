@@ -21,6 +21,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "job_post", indexes = {
+        // Covers the salary-comparables filter in JobRepo.salaryComparables.
+        @Index(name = "idx_job_post_comparables", columnList = "is_active, location, req_experience"),
+        @Index(name = "idx_job_post_posted_date", columnList = "posted_date")
+})
 public class JobPost {
 
     @Id

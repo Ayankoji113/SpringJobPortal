@@ -35,17 +35,19 @@ Requires a running PostgreSQL `JobPortalDB` — there is no in-memory/H2 fallbac
 
 ## Architecture
 
-Standard Spring layering: `controller` → `service` → `repo` (Spring Data JPA) over `model` entities. `dto` holds only request/response shapes for auth, search, and stats; **most endpoints return JPA entities directly**, so serialization is controlled by `@JsonIgnore`/`@JsonIgnoreProperties` on the entity (see `model/User.java`) — adding a field to an entity changes the API payload.
+Package-by-feature under `com.tausib.springjobportal`: `user/`, `company/`, `job/`, `application/`, `notification/`, `matching/`, `dashboard/`, `file/`, plus `common/` (aop, security, mail, exception, Swagger config). Each feature package holds its own entity, repo, service, controller, mapper and `dto/`. Features depend on `common` and on `user`, never the reverse. `matching/` is top-level, not nested in `job/`, because `AIController.autoApply` needs `JobApplicationService` while `application/` needs `JobPost`. There is no top-level `model/ repo/ service/ controller/ dto/` any more — `docs/ARCHITECTURE.md` is the fuller map.
 
-Auth: JWT, stateless. `User` itself implements `UserDetails`, so controllers take `@AuthenticationPrincipal User user` and get the full entity. `JwtAuthFilter` populates the context; `RefreshToken` is a DB-backed entity with its own service. Route rules live in two places and both matter: coarse path rules in `config/SecurityConfig.java`, and per-endpoint `@PreAuthorize("hasRole('EMPLOYER'|'JOB_SEEKER'|'ADMIN')")` on controller methods (`@EnableMethodSecurity` is on).
+`user`, `company` and `job` take and return DTOs (`*Request`/`*Response` + a mapper). `application`, `notification` and `matching` still return JPA entities directly, so serialization there is controlled by `@JsonIgnore`/`@JsonIgnoreProperties` on the entity — adding a field to one of those entities changes the API payload.
+
+Auth: JWT, stateless. `UserPrincipal` (not the `User` entity) is the security principal, so controllers take `@AuthenticationPrincipal UserPrincipal principal` and get an id + role, not a loaded entity. `JwtAuthFilter` populates the context; `RefreshToken` is a DB-backed entity with its own service. Route rules live in two places and both matter: coarse path rules in `common/security/SecurityConfig.java`, and per-endpoint `@PreAuthorize` on controller methods (`@EnableMethodSecurity` is on).
 
 CORS is hardcoded to `http://localhost:5173` / `:3000` in `SecurityConfig`, and the frontend's axios `baseURL` is hardcoded to `http://localhost:8080/api` in `src/main/frontend/src/services/api.js`. There is no Vite proxy. Changing ports or deploying means touching both sides.
 
 `AIService` is deliberately not an LLM call — it is rule-based keyword/skill matching and templated cover-letter text, with results cached in the `MatchScore` entity. The class comment marks it as swappable for a real provider.
 
-The `spring-boot-starter-websocket` dependency is present and `/ws/**` is permitted in `SecurityConfig`, but **no WebSocket config or handler exists**. Messaging and notifications are plain REST (`/api/messages`, `/api/notifications`) that the frontend polls, despite the README calling them real-time.
+Notifications are plain REST (`/api/notifications`) polled by the frontend every 30s. There is no WebSocket dependency, config, or handler anywhere, despite what the README says.
 
-`aop/` holds three aspects that apply globally to `service` package methods: logging, timing, and `ValidationAspect`, which silently rewrites a negative `postid` argument to `JobService.updateJob` into its absolute value. Be aware of that when debugging odd id behaviour.
+`common/aop/` holds two aspects that apply globally to controller and service methods: logging (which logs whole returned objects at INFO) and timing.
 
 Frontend state: a single `context/AuthContext.jsx` plus `localStorage` for token/user. The axios response interceptor in `services/api.js` hard-redirects to `/login` on any 401, so a failing authenticated call logs the user out rather than surfacing an error.
 

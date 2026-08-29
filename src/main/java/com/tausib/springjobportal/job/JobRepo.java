@@ -46,4 +46,41 @@ public interface JobRepo extends JpaRepository<JobPost, Integer> {
             @Param("maxExp") Integer maxExp,
             Pageable pageable
     );
+
+    /**
+     * Percentiles of the midpoint salary across comparable active postings: overlapping title,
+     * same location (or remote), and a +/-2 year experience band. Computed in SQL so only four
+     * numbers cross the wire; capped by :limit, newest first.
+     *
+     * ponytail: title similarity is a two-way LIKE, not tokenised or fuzzy. Good enough while
+     * postings are few; move to pg_trgm similarity() + a GIN index if comparables get noisy.
+     */
+    @Query(value = """
+            SELECT count(*)                                              AS "sampleSize",
+                   percentile_cont(0.25) WITHIN GROUP (ORDER BY c.mid)   AS "p25",
+                   percentile_cont(0.50) WITHIN GROUP (ORDER BY c.mid)   AS "p50",
+                   percentile_cont(0.75) WITHIN GROUP (ORDER BY c.mid)   AS "p75"
+            FROM (
+                SELECT cast(j.salary_min + j.salary_max AS double precision) / 2 AS mid
+                FROM job_post j
+                WHERE j.is_active = true AND j.is_approved = true
+                  AND j.post_id <> :postId
+                  AND j.salary_min IS NOT NULL AND j.salary_max IS NOT NULL
+                  AND (LOWER(j.post_profile) LIKE LOWER(CONCAT('%', :title, '%'))
+                       OR LOWER(:title) LIKE LOWER(CONCAT('%', j.post_profile, '%')))
+                  AND (CAST(:location AS text) IS NULL
+                       OR LOWER(j.location) = LOWER(CAST(:location AS text))
+                       OR j.is_remote = true)
+                  AND (CAST(:experience AS integer) IS NULL
+                       OR j.req_experience BETWEEN CAST(:experience AS integer) - 2
+                                               AND CAST(:experience AS integer) + 2)
+                ORDER BY j.posted_date DESC
+                LIMIT :limit
+            ) c
+            """, nativeQuery = true)
+    SalaryStats salaryComparables(@Param("postId") Integer postId,
+                                  @Param("title") String title,
+                                  @Param("location") String location,
+                                  @Param("experience") Integer experience,
+                                  @Param("limit") int limit);
 }

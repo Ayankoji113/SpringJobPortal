@@ -1,9 +1,6 @@
-package com.tausib.springjobportal.controller;
+package com.tausib.springjobportal.application;
 
-import com.tausib.springjobportal.model.ApplicationStatus;
-import com.tausib.springjobportal.model.JobApplication;
 import com.tausib.springjobportal.user.UserPrincipal;
-import com.tausib.springjobportal.service.JobApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

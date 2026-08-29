@@ -5,8 +5,8 @@ export const getMatchScore = async (jobId) => {
     return response.data;
 };
 
-export const getSalaryEstimate = async () => {
-    const response = await api.get('/ai/salary-estimate');
+export const getSalaryEstimate = async (jobId) => {
+    const response = await api.get(`/ai/salary-estimate/${jobId}`);
     return response.data;
 };
 

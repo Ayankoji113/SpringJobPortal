@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import * as aiService from '../services/aiService';
+import * as jobService from '../services/jobService';
 import { Brain, DollarSign, Sparkles, Zap } from 'lucide-react';
 
 export const AITools = () => {
@@ -11,11 +12,14 @@ export const AITools = () => {
     const [recommended, setRecommended] = useState([]);
     const [autoApplyResult, setAutoApplyResult] = useState(null);
     const [threshold, setThreshold] = useState(60);
+    const [jobs, setJobs] = useState([]);
+    const [salaryJobId, setSalaryJobId] = useState('');
 
-    const fetchSalary = async () => {
+    const fetchSalary = async (jobId) => {
+        if (!jobId) return;
         setLoading(true);
         try {
-            const data = await aiService.getSalaryEstimate();
+            const data = await aiService.getSalaryEstimate(jobId);
             setSalary(data);
         } catch (e) { console.error(e); }
         setLoading(false);
@@ -40,7 +44,9 @@ export const AITools = () => {
     };
 
     useEffect(() => {
-        if (activeTab === 'salary') fetchSalary();
+        if (activeTab === 'salary' && jobs.length === 0) {
+            jobService.getAllJobs().then(setJobs).catch(console.error);
+        }
         if (activeTab === 'recommended') fetchRecommended();
     }, [activeTab]);
 
@@ -75,24 +81,57 @@ export const AITools = () => {
             {loading && <div className="flex justify-center mt-4"><div className="spinner"></div></div>}
 
             {/* Salary Estimate */}
-            {activeTab === 'salary' && salary && !loading && (
-                <div className="glass-panel" style={{ padding: '2rem', textAlign: 'center' }}>
-                    <DollarSign size={48} color="var(--success-color)" style={{ margin: '0 auto 1rem' }} />
-                    <h2 style={{ fontWeight: 700, marginBottom: '0.5rem' }}>Estimated Salary Range</h2>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--success-color)', marginBottom: '0.5rem' }}>
-                        ₹{(salary.estimatedMinSalary / 100000).toFixed(1)}L - ₹{(salary.estimatedMaxSalary / 100000).toFixed(1)}L
+            {activeTab === 'salary' && (
+                <div className="glass-panel" style={{ padding: '2rem' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                        <label className="text-secondary" style={{ fontSize: '0.9rem' }}>Posting:</label>
+                        <select
+                            value={salaryJobId}
+                            onChange={e => { setSalaryJobId(e.target.value); setSalary(null); fetchSalary(e.target.value); }}
+                            style={{ flex: 1 }}
+                        >
+                            <option value="">Choose a job posting…</option>
+                            {jobs.map(j => (
+                                <option key={j.postId} value={j.postId}>
+                                    {j.postProfile}{j.location ? ` — ${j.location}` : ''}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                    <p className="text-secondary mb-2">per annum ({salary.currency})</p>
-                    <div className="flex justify-center gap-4 mt-2" style={{ flexWrap: 'wrap' }}>
-                        <span className="badge badge-primary">Experience: {salary.experienceYears || 0} years</span>
-                        <span className="badge badge-primary">Skills: {salary.skillCount}</span>
-                    </div>
-                    {salary.highDemandSkills?.length > 0 && (
-                        <div style={{ marginTop: '1.5rem' }}>
-                            <p className="text-secondary" style={{ fontSize: '0.85rem' }}>High-demand skills boosting your salary:</p>
-                            <div className="flex gap-2 justify-center mt-1" style={{ flexWrap: 'wrap' }}>
-                                {salary.highDemandSkills.map(s => <span key={s} className="job-card__skill">{s}</span>)}
-                            </div>
+
+                    {salary && !loading && (
+                        <div style={{ textAlign: 'center' }}>
+                            <DollarSign size={48} color="var(--success-color)" style={{ margin: '0 auto 1rem' }} />
+                            <h2 style={{ fontWeight: 700, marginBottom: '0.5rem' }}>Comparable Postings</h2>
+                            {salary.sampleSize === 0 ? (
+                                <p className="text-secondary">No comparable postings with salary data yet.</p>
+                            ) : (
+                                <>
+                                    <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--success-color)', marginBottom: '0.5rem' }}>
+                                        ₹{(salary.p25 / 100000).toFixed(1)}L – ₹{(salary.p75 / 100000).toFixed(1)}L
+                                    </div>
+                                    <p className="text-secondary mb-2">
+                                        median ₹{(salary.p50 / 100000).toFixed(1)}L per annum ({salary.currency})
+                                    </p>
+                                    <div className="flex justify-center gap-4 mt-2" style={{ flexWrap: 'wrap' }}>
+                                        <span className="badge badge-primary">{salary.sampleSize} comparable postings</span>
+                                        <span className={`badge ${salary.confidence === 'HIGH' ? 'badge-success' : salary.confidence === 'MEDIUM' ? 'badge-warning' : 'badge-danger'}`}>
+                                            {salary.confidence} confidence
+                                        </span>
+                                    </div>
+                                    {salary.narrative ? (
+                                        <div style={{ marginTop: '1.5rem', textAlign: 'left' }}>
+                                            <p className="mb-2"><strong>What drives the range:</strong> {salary.narrative.rangeDrivers}</p>
+                                            <p className="mb-2"><strong>Where this posting sits:</strong> {salary.narrative.positioning}</p>
+                                            <p><strong>Outlier check:</strong> {salary.narrative.outlierAssessment}</p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-secondary" style={{ marginTop: '1.5rem', fontSize: '0.85rem' }}>
+                                            Explanation unavailable right now — the figures above are unaffected.
+                                        </p>
+                                    )}
+                                </>
+                            )}
                         </div>
                     )}
                 </div>

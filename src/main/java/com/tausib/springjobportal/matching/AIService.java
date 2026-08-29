@@ -1,12 +1,10 @@
-package com.tausib.springjobportal.service;
+package com.tausib.springjobportal.matching;
 
 import com.tausib.springjobportal.job.JobPost;
 
 import com.tausib.springjobportal.user.User;
 import com.tausib.springjobportal.user.UserService;
 
-import com.tausib.springjobportal.model.*;
-import com.tausib.springjobportal.repo.MatchScoreRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Rule-based service for job matching, salary estimation, and recommendation ranking.
+ * Rule-based service for job matching and recommendation ranking.
  * Uses keyword/skill overlap scoring. Can be swapped for a real provider later.
  */
 @Service
@@ -90,56 +88,6 @@ public class AIService {
                 .build();
 
         return matchScoreRepo.save(matchScore);
-    }
-
-    /**
-     * Estimate salary based on skills and experience.
-     */
-    public Map<String, Object> estimateSalary(Integer userId) {
-        User user = userService.getEntityById(userId);
-        Map<String, Object> estimate = new HashMap<>();
-
-        // Base salary tiers based on experience
-        int baseSalary;
-        if (user.getExperienceYears() == null || user.getExperienceYears() == 0) {
-            baseSalary = 300000; // 3 LPA for freshers
-        } else if (user.getExperienceYears() <= 2) {
-            baseSalary = 500000; // 5 LPA
-        } else if (user.getExperienceYears() <= 5) {
-            baseSalary = 900000; // 9 LPA
-        } else if (user.getExperienceYears() <= 8) {
-            baseSalary = 1500000; // 15 LPA
-        } else if (user.getExperienceYears() <= 12) {
-            baseSalary = 2200000; // 22 LPA
-        } else {
-            baseSalary = 3000000; // 30 LPA
-        }
-
-        // Skill premium (certain skills command higher salaries)
-        Set<String> highDemand = Set.of("react", "node", "spring", "java", "python", "aws", "docker",
-                "kubernetes", "microservices", "ai", "machine learning", "tensorflow", "golang", "rust");
-
-        int skillBonus = 0;
-        if (user.getSkills() != null) {
-            long count = user.getSkills().stream()
-                    .filter(s -> highDemand.contains(s.toLowerCase()))
-                    .count();
-            skillBonus = (int) (count * 50000);
-        }
-
-        int estimatedMin = baseSalary + skillBonus;
-        int estimatedMax = (int) (estimatedMin * 1.3);
-
-        estimate.put("estimatedMinSalary", estimatedMin);
-        estimate.put("estimatedMaxSalary", estimatedMax);
-        estimate.put("currency", "INR");
-        estimate.put("experienceYears", user.getExperienceYears());
-        estimate.put("skillCount", user.getSkills() != null ? user.getSkills().size() : 0);
-        estimate.put("highDemandSkills", user.getSkills() != null
-                ? user.getSkills().stream().filter(s -> highDemand.contains(s.toLowerCase())).collect(Collectors.toList())
-                : Collections.emptyList());
-
-        return estimate;
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.tausib.springjobportal.model;
+package com.tausib.springjobportal.notification;
 
 import com.tausib.springjobportal.user.User;
 

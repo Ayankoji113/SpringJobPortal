@@ -9,7 +9,8 @@ services:
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/JobPortalDB
       - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=tausibpatel&7796
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD:?set it in .env}
+      - JWT_SECRET=${JWT_SECRET:?set it in .env}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     depends_on:
       db:
@@ -25,7 +26,7 @@ services:
     environment:
       - POSTGRES_DB=JobPortalDB
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=tausibpatel&7796
+      - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD:?set it in .env}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

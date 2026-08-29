@@ -53,6 +53,8 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/JobPortalDB_test
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: testpassword
+          # Throwaway, CI-only. Signs nothing that exists outside this job.
+          JWT_SECRET: Y2ktb25seS10aHJvd2F3YXkta2V5LW5vdC11c2VkLW91dHNpZGUtZ2l0aHViLWFjdGlvbnMhIQ==
         run: ./mvnw test
 
       - name: Build application
