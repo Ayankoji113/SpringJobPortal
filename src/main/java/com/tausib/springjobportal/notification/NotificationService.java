@@ -1,5 +1,6 @@
 package com.tausib.springjobportal.notification;
 
+import com.tausib.springjobportal.common.exception.ResourceNotFoundException;
 import com.tausib.springjobportal.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,9 +38,10 @@ public class NotificationService {
         return notificationRepo.countByUserIdAndIsReadFalse(userId);
     }
 
-    public Notification markAsRead(Integer notificationId) {
-        Notification notification = notificationRepo.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+    public Notification markAsRead(Integer notificationId, Integer userId) {
+        Notification notification = notificationRepo.findByIdAndUserId(notificationId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Notification not found with id: " + notificationId));
         notification.setIsRead(true);
         return notificationRepo.save(notification);
     }
@@ -50,7 +52,9 @@ public class NotificationService {
         notificationRepo.saveAll(unread);
     }
 
-    public void deleteNotification(Integer id) {
-        notificationRepo.deleteById(id);
+    public void deleteNotification(Integer id, Integer userId) {
+        notificationRepo.delete(notificationRepo.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Notification not found with id: " + id)));
     }
 }

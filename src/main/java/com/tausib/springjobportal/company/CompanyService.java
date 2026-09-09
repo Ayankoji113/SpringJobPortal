@@ -29,6 +29,16 @@ public class CompanyService {
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found with id: " + id));
     }
 
+    /**
+     * Entity accessor that also enforces ownership. Used by {@code job/} so a posting cannot name a
+     * company the poster does not own — otherwise any employer can publish under any established
+     * company's name and logo.
+     */
+    @Transactional(readOnly = true)
+    public Company getOwnedEntityById(Integer id, Integer ownerId) {
+        return requireOwner(id, ownerId);
+    }
+
     @Transactional
     public CompanyResponse create(CompanyRequest request, Integer ownerId) {
         Company company = Company.builder()

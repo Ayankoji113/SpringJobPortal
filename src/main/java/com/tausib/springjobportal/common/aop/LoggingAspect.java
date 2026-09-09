@@ -6,6 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+/**
+ * Method-level tracing only. It deliberately does not log arguments or return values: doing so
+ * wrote applicant contact details and account tokens into the log file on every request.
+ */
 @Component
 @Aspect
 public class LoggingAspect {
@@ -24,9 +28,5 @@ public class LoggingAspect {
     @AfterThrowing(pointcut = "execution(* com.tausib.springjobportal..*Controller.*(..)) || execution(* com.tausib.springjobportal..*Service.*(..))", throwing = "ex")
     public void logMethodCrash(JoinPoint jp, Throwable ex){
         LOGGER.error("Method crashed" + jp.getSignature().getName() + "Exception: " + ex.getMessage());
-    }
-    @AfterReturning(pointcut = "execution(* com.tausib.springjobportal..*Controller.*(..)) || execution(* com.tausib.springjobportal..*Service.*(..))", returning = "result")
-    public void logMethodReturn(JoinPoint jp, Object result){
-        LOGGER.info("Method returned" + jp.getSignature().getName() + "Result: " + result);
     }
 }

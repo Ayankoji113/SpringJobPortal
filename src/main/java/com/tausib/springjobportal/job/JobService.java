@@ -124,7 +124,7 @@ public class JobService {
                 .postTechStack(request.getPostTechStack())
                 .postedBy(userService.getEntityById(employerId))
                 .company(request.getCompanyId() == null
-                        ? null : companyService.getEntityById(request.getCompanyId()))
+                        ? null : companyService.getOwnedEntityById(request.getCompanyId(), employerId))
                 .salaryMin(request.getSalaryMin())
                 .salaryMax(request.getSalaryMax())
                 .location(request.getLocation())
@@ -144,7 +144,9 @@ public class JobService {
         if (request.getPostDesc() != null) job.setPostDesc(request.getPostDesc());
         if (request.getReqExperience() != null) job.setReqExperience(request.getReqExperience());
         if (request.getPostTechStack() != null) job.setPostTechStack(request.getPostTechStack());
-        if (request.getCompanyId() != null) job.setCompany(companyService.getEntityById(request.getCompanyId()));
+        if (request.getCompanyId() != null) {
+            job.setCompany(companyService.getOwnedEntityById(request.getCompanyId(), employerId));
+        }
         if (request.getSalaryMin() != null) job.setSalaryMin(request.getSalaryMin());
         if (request.getSalaryMax() != null) job.setSalaryMax(request.getSalaryMax());
         if (request.getLocation() != null) job.setLocation(request.getLocation());

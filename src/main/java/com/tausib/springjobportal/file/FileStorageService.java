@@ -1,5 +1,6 @@
 package com.tausib.springjobportal.file;
 
+import com.tausib.springjobportal.common.exception.ResourceNotFoundException;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -55,13 +56,37 @@ public class FileStorageService {
         return storeFile(file, "logos", filename);
     }
 
+    /**
+     * Reads one stored upload. {@code filePath} arrives straight from a query parameter, so the
+     * resolved path is checked back against {@link #uploadDir}: resolve() walks out of the upload
+     * directory on "../.." and treats an absolute path as a replacement, either of which turned
+     * this into an arbitrary-file-read of the host.
+     */
     public byte[] loadFile(String filePath) {
+        Path path = uploadDir.resolve(filePath).normalize();
+        if (!path.startsWith(uploadDir)) {
+            throw new ResourceNotFoundException("File not found: " + filePath);
+        }
         try {
-            Path path = uploadDir.resolve(filePath).normalize();
             return Files.readAllBytes(path);
         } catch (IOException e) {
-            throw new RuntimeException("File not found: " + filePath, e);
+            throw new ResourceNotFoundException("File not found: " + filePath);
         }
+    }
+
+    /** Content type for a stored upload, by extension. Shared with the resume endpoint. */
+    public static String contentTypeFor(String path) {
+        String ext = FilenameUtils.getExtension(path).toLowerCase();
+        return switch (ext) {
+            case "pdf" -> "application/pdf";
+            case "jpg", "jpeg" -> "image/jpeg";
+            case "png" -> "image/png";
+            case "webp" -> "image/webp";
+            case "gif" -> "image/gif";
+            case "doc" -> "application/msword";
+            case "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            default -> "application/octet-stream";
+        };
     }
 
     private String storeFile(MultipartFile file, String subDir, String filename) {

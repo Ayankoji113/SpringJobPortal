@@ -33,6 +33,10 @@ public class UserService {
     /**
      * Another user's profile, honouring their visibility setting. Returns the profile only when
      * it is public or the caller is the owner.
+     *
+     * <p>"Public" means visible, not fully disclosed: contact details and the resume path are
+     * stripped for anyone but the owner. Profiles default to public and ids are sequential, so
+     * leaving them in made the whole seeker base harvestable by walking /api/users/{id}.
      */
     @Transactional(readOnly = true)
     public UserResponse getVisibleProfile(Integer targetId, Integer callerId) {
@@ -41,7 +45,14 @@ public class UserService {
         if (!isOwner && Boolean.FALSE.equals(user.getIsProfilePublic())) {
             throw new ResourceNotFoundException("User not found with id: " + targetId);
         }
-        return userMapper.toResponse(user);
+
+        UserResponse response = userMapper.toResponse(user);
+        if (!isOwner) {
+            response.setEmail(null);
+            response.setPhone(null);
+            response.setResumePath(null);
+        }
+        return response;
     }
 
     @Transactional

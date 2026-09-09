@@ -32,8 +32,11 @@ public class NotificationController {
     }
 
     @PatchMapping("/{id}/read")
-    public ResponseEntity<Notification> markAsRead(@PathVariable Integer id) {
-        return ResponseEntity.ok(notificationService.markAsRead(id));
+    public ResponseEntity<Notification> markAsRead(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal UserPrincipal user
+    ) {
+        return ResponseEntity.ok(notificationService.markAsRead(id, user.getId()));
     }
 
     @PostMapping("/mark-all-read")
@@ -43,8 +46,11 @@ public class NotificationController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteNotification(@PathVariable Integer id) {
-        notificationService.deleteNotification(id);
+    public ResponseEntity<?> deleteNotification(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal UserPrincipal user
+    ) {
+        notificationService.deleteNotification(id, user.getId());
         return ResponseEntity.ok(Map.of("message", "Notification deleted"));
     }
 }
