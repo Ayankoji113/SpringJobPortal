@@ -15,7 +15,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.username:noreply@jobportal.com}")
+    @Value("${app.mail.from:noreply@jobportal.com}")
     private String fromEmail;
 
     @Value("${app.base-url:http://localhost:5173}")
@@ -52,6 +52,15 @@ public class EmailService {
         String subject = "Application Status Update - " + jobTitle;
         String body = "Hello,\n\nYour application for \"" + jobTitle + "\" has been updated to: "
                 + status + "\n\nLog in to see more details.\n\nBest,\nNextGen Jobs Team";
+        sendEmail(to, subject, body);
+    }
+
+    @Async
+    public void sendResponseReminderEmail(String to, int waiting) {
+        String subject = "Applications waiting for your response - NextGen Jobs";
+        String body = "Hello,\n\n" + waiting + " application(s) to your postings are close to their response "
+                + "deadline. Any that are not answered in time are marked as unanswered and count against "
+                + "your response rate.\n\n" + baseUrl + "/manage-applications\n\nBest,\nNextGen Jobs Team";
         sendEmail(to, subject, body);
     }
 

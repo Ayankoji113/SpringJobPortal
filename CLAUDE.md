@@ -4,57 +4,60 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Layout
 
-The git repo root is `SpringJobPortal/` (one level below the usual working directory `D:\JOB_Portal project`). The React frontend lives *inside* the Maven source tree at `src/main/frontend/` — it is a separate npm project, not a Maven module, and is only wired to the backend by the Docker build (`npm run build` then `mvnw package`).
+The git repo root is `SpringJobPortal/` (one level below the usual working directory `D:\JOB_Portal project`). The React frontend lives *inside* the Maven source tree at `src/main/frontend/`. It is a separate npm project, not a Maven module. The two meet only in the Docker build, which runs `npm run build` and copies the output into the jar as `static/`.
 
 ## Commands
 
-Backend (from repo root; on Windows use `mvnw.cmd`):
+Backend (from repo root; on Windows use `mvnw.cmd`). Always use `clean`: incremental builds have hidden errors here.
 
 ```bash
 ./mvnw spring-boot:run          # run on :8080 (needs Postgres up)
-./mvnw test                     # all tests
+./mvnw clean verify             # all tests
 ./mvnw test -Dtest=ClassName#methodName
-./mvnw package -DskipTests
+./mvnw clean package -DskipTests
 ```
 
 Frontend (from `src/main/frontend`):
 
 ```bash
-npm install && npm run dev      # Vite dev server on :5173
-npm run lint                    # eslint (no test runner configured)
+npm install && npm run dev      # Vite dev server on :5173, talks to http://localhost:8080/api
+npm run lint
 npm run build
+npm run shots                   # Playwright screenshots of the main pages (e2e/shots.mjs)
 ```
 
-Full stack with a throwaway Postgres: `docker compose up --build`.
+Full stack: copy `.env.example` to `.env`, then `docker compose up --build` (app on :8080).
+
+## Configuration and secrets
+
+`src/main/resources/application.properties` holds no secrets. Every deploy-relevant value is a `${ENV_VAR:default}` placeholder; `.env.example` at the repo root lists them all. `SPRING_DATASOURCE_PASSWORD` and `JWT_SECRET` have no default, so the app refuses to start without them. For local development the real values live in the git-ignored `config/application.properties` (Spring Boot loads `./config/` automatically); never print or commit that file.
 
 ## Database
 
-Requires a running PostgreSQL `JobPortalDB` — there is no in-memory/H2 fallback, so **every** backend test boots a real Spring context against Postgres and fails without it. Schema is managed by `ddl-auto=update`; there are no migrations. Override connection details with the standard `SPRING_DATASOURCE_*` env vars (what CI and docker-compose do) rather than editing `application.properties`.
-
-`src/main/resources/application.properties` contains committed dev credentials and a committed `jwt.secret`. Treat them as dev-only defaults; override via env in any real deployment.
+Requires a running PostgreSQL. There is no H2 fallback, so the context tests boot a real Spring context against Postgres and fail without it. The schema is owned by Flyway (`src/main/resources/db/migration`, V1 to V4) and Hibernate runs with `ddl-auto=validate`: a schema change is a new `V<n>__*.sql` file, never an entity edit alone. `baseline-on-migrate` stamps databases created by the old `ddl-auto=update` at V1.
 
 ## Architecture
 
-Package-by-feature under `com.tausib.springjobportal`: `user/`, `company/`, `job/`, `application/`, `notification/`, `matching/`, `dashboard/`, `file/`, plus `common/` (aop, security, mail, exception, Swagger config). Each feature package holds its own entity, repo, service, controller, mapper and `dto/`. Features depend on `common` and on `user`, never the reverse. `matching/` is top-level, not nested in `job/`, because `AIController.autoApply` needs `JobApplicationService` while `application/` needs `JobPost`. There is no top-level `model/ repo/ service/ controller/ dto/` any more — `docs/ARCHITECTURE.md` is the fuller map.
+Package-by-feature under `com.tausib.springjobportal`: `user/`, `company/`, `job/`, `application/`, `notification/`, `matching/`, `dashboard/`, `file/`, `admin/`, plus `common/` (aop, config, exception, mail, security). Features depend on `common` and `user`, never the reverse. `docs/ARCHITECTURE.md` is the fuller map.
 
-`user`, `company` and `job` take and return DTOs (`*Request`/`*Response` + a mapper). `application`, `notification` and `matching` still return JPA entities directly, so serialization there is controlled by `@JsonIgnore`/`@JsonIgnoreProperties` on the entity — adding a field to one of those entities changes the API payload.
+`user`, `company`, `job`, `application` and `admin` take and return DTOs. `notification` and `matching` still return JPA entities, so serialization there is controlled by `@JsonIgnore` on the entity.
 
-Auth: JWT, stateless. `UserPrincipal` (not the `User` entity) is the security principal, so controllers take `@AuthenticationPrincipal UserPrincipal principal` and get an id + role, not a loaded entity. `JwtAuthFilter` populates the context; `RefreshToken` is a DB-backed entity with its own service. Route rules live in two places and both matter: coarse path rules in `common/security/SecurityConfig.java`, and per-endpoint `@PreAuthorize` on controller methods (`@EnableMethodSecurity` is on).
+Auth: JWT, stateless. `UserPrincipal` (not the `User` entity) is the principal; controllers take `@AuthenticationPrincipal UserPrincipal`. Route rules live in two places and both matter: path rules in `common/security/SecurityConfig.java` and `@PreAuthorize` on controller methods. In `SecurityConfig`, `/api/**` is authenticated unless listed; non-API `GET`s are permitted because they are the bundled SPA; only `/actuator/health` and `/actuator/info` are public.
 
-CORS is hardcoded to `http://localhost:5173` / `:3000` in `SecurityConfig`, and the frontend's axios `baseURL` is hardcoded to `http://localhost:8080/api` in `src/main/frontend/src/services/api.js`. There is no Vite proxy. Changing ports or deploying means touching both sides.
+Serving the SPA: `common/config/SpaWebConfig` serves `classpath:/static/` and returns `index.html` for client routes (`/job/3`), never for `/api`, actuator or Swagger paths or for missing files. In development nothing is bundled and Vite serves the frontend. CORS origins come from `app.cors.allowed-origins` (default `http://localhost:5173,http://localhost:3000`).
 
-`AIService` is deliberately not an LLM call — it is rule-based keyword/skill matching and templated cover-letter text, with results cached in the `MatchScore` entity. The class comment marks it as swappable for a real provider.
+Jobs and moderation: a new posting starts `PENDING_REVIEW` and is public only when `PUBLISHED` and `isActive`. `JobStatus` also has `REJECTED` and `SUSPENDED`. Editing a published posting's content sends it back to review. `admin/` (`/api/admin`, `hasRole('ADMIN')`) reviews postings, features them, bans users and keeps an `admin_actions` log. Registration cannot create an admin: `AdminSeeder` promotes the already-registered account named by `app.admin.email` at startup.
 
-Notifications are plain REST (`/api/notifications`) polled by the frontend every 30s. There is no WebSocket dependency, config, or handler anywhere, despite what the README says.
+Application lifecycle (`application/`): eight statuses, `PENDING → REVIEWED → INTERVIEW → OFFERED → ACCEPTED`, `REJECTED` from any open stage, `WITHDRAWN` by the seeker (`POST /{id}/withdraw`), and `NO_RESPONSE` set by the system. Each application gets a `respond_by` 14 days out; the hourly `ApplicationDeadlineTask` marks missed ones `NO_RESPONSE` and reminds employers 4 days before. Every status change writes an `application_events` row (`GET /{id}/timeline`). `GET /api/applications/employer/{id}/responsiveness` is public: 90-day response rate and median, withheld under 5 outcomes. Seekers are limited to 20 applications per 24 hours; `POST /api/applications/bulk` applies to at most 5 hand-picked jobs. There is no auto-apply.
 
-`common/aop/` holds two aspects that apply globally to controller and service methods: logging (which logs whole returned objects at INFO) and timing.
+`matching/`: `AIService` is rule-based skill matching, not an LLM. `SalaryEstimateService` (`/api/ai/salary-estimate/{jobId}`) uses Gemini through Spring AI's OpenAI-compatible client, with `GEMINI_API_KEY` from the environment; without a key it returns percentiles only.
 
-Frontend state: a single `context/AuthContext.jsx` plus `localStorage` for token/user. The axios response interceptor in `services/api.js` hard-redirects to `/login` on any 401, so a failing authenticated call logs the user out rather than surfacing an error.
+Notifications are plain REST (`/api/notifications`); the frontend polls the unread count every 60 s. There are no WebSockets.
+
+`common/aop/` logs entry/exit/exceptions and timing for every `*Controller` and `*Service` method.
+
+Frontend: React 19, React Router, TanStack Query, `context/AuthContext.jsx` + `localStorage` for the token. `services/api.js` reads `VITE_API_URL` at build time (fallback `http://localhost:8080/api`; the Docker build sets `/api`). Its response interceptor redirects to `/login` on a 401. The design system (tokens, type, components, banned patterns) is described in `src/main/frontend/DESIGN.md`. Fonts are self-hosted with Fontsource; `vite.config.js` renames "Archivo Variable" to "Archivo".
 
 ## CI
 
-`.github/workflows/ci.yml` runs on push to `main`/`develop`: frontend `npm ci && npm run build`, then `./mvnw test` against a Postgres service container, then `./mvnw package`. The Docker image build only runs on `main`.
-
-## Notes
-
-`run-log.txt` (1.4 MB) is a committed agent log — do not read it wholesale. `ralph.sh` is a generic autonomous-agent retry loop, not part of the build.
+`.github/workflows/ci.yml`: a frontend job (`npm ci`, lint, build), a backend job (`./mvnw clean verify` against a Postgres 16 service, Flyway builds the schema, CI-only dummy secrets), and on `main` a Docker image build. No deployment.

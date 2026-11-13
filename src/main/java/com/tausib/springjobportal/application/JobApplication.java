@@ -45,4 +45,13 @@ public class JobApplication {
 
     @CreationTimestamp
     private LocalDateTime appliedDate;
+
+    /** When the employer must have acted by. Null only on rows decided before deadlines existed. */
+    private LocalDateTime respondBy;
+
+    /** The first time the employer (or a closed posting) answered. Never overwritten. */
+    private LocalDateTime respondedAt;
+
+    /** Set once the employer has been warned the deadline is close, so they are warned once. */
+    private LocalDateTime reminderSentAt;
 }

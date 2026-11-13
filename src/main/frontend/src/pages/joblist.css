@@ -1,38 +1,211 @@
-.jp-joblist {
+/* /jobs: one search bar, a filter rail, and the results as one ruled list. */
+
+.jp-jobs > .jp-display { margin-bottom: var(--jp-space-4); }
+
+/* ------------------------------------------------------------ search bar
+   One bordered object with two fields and the action, so it reads as a single
+   question ("what, where") rather than two loose inputs. */
+.jp-jobs__search {
   display: grid;
-  grid-template-columns: var(--jp-rail-width) 1fr;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  align-items: stretch;
+  background: var(--jp-surface);
+  border: var(--jp-border-strong);
+  border-radius: var(--jp-radius-lg);
+  padding: var(--jp-space-1);
+  margin-bottom: var(--jp-space-6);
+}
+
+.jp-jobs__field {
+  display: flex;
+  align-items: center;
+  gap: var(--jp-space-2);
+  padding-inline: var(--jp-space-3);
+  min-width: 0;
+  color: var(--jp-ink-muted);
+  border-radius: var(--jp-radius-md);
+}
+.jp-jobs__field + .jp-jobs__field { border-left: var(--jp-border); }
+.jp-jobs__field:focus-within { color: var(--jp-accent); }
+
+.jp-jobs__field input {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--jp-fs-body);
+  color: var(--jp-ink);
+}
+.jp-jobs__field input::placeholder { color: var(--jp-ink-muted); }
+.jp-jobs__field input:focus-visible { outline: none; }
+/* The whole field shows focus, not the bare input inside it. */
+.jp-jobs__field:has(input:focus-visible) {
+  outline: var(--jp-focus-width) solid var(--jp-focus-color);
+  outline-offset: 0;
+}
+
+.jp-jobs__go { min-width: 120px; }
+
+/* ---------------------------------------------------------------- layout */
+.jp-jobs__grid {
+  display: grid;
+  grid-template-columns: var(--jp-rail-width) minmax(0, 1fr);
   gap: var(--jp-space-6);
   align-items: start;
 }
 
-.jp-joblist__rail {
+.jp-jobs__rail {
   position: sticky;
   top: calc(var(--jp-header-height) + var(--jp-space-5));
+  display: grid;
+  gap: var(--jp-space-3);
 }
 
-.jp-filters {
+/* -------------------------------------------------------- refine filters */
+.jp-refine { display: grid; gap: 0; }
+
+.jp-refine__group {
+  border: 0;
+  border-top: var(--jp-border);
+  margin: 0;
+  padding: var(--jp-space-4) 0;
+  display: grid;
+  gap: var(--jp-space-1);
+  min-width: 0;
+}
+
+.jp-refine__legend {
+  float: left; /* lets the legend sit inside the grid like any other child */
+  width: 100%;
+  padding: 0;
+  margin-bottom: var(--jp-space-2);
+  font-size: var(--jp-fs-sm);
+  font-weight: var(--jp-fw-semibold);
+  color: var(--jp-ink);
+}
+
+.jp-refine__option {
   display: flex;
-  flex-direction: column;
-  gap: var(--jp-space-4);
+  align-items: center;
+  gap: var(--jp-space-3);
+  min-height: 32px;
+  font-size: var(--jp-fs-sm);
+  color: var(--jp-ink-secondary);
+  cursor: pointer;
 }
+.jp-refine__option:hover { color: var(--jp-ink); }
+.jp-refine__option input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--jp-accent);
+  cursor: pointer;
+}
+.jp-refine__option:has(input:checked) { color: var(--jp-ink); font-weight: var(--jp-fw-medium); }
 
-.jp-filters__pair {
+.jp-refine__pair {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--jp-space-3);
 }
 
-.jp-filters__actions {
-  display: flex;
-  flex-direction: column;
+.jp-refine__actions {
+  display: grid;
   gap: var(--jp-space-2);
-  padding-top: var(--jp-space-2);
+  padding-top: var(--jp-space-4);
   border-top: var(--jp-border);
 }
 
-/* The rail is the desktop presentation; the trigger button is the mobile one. */
-.jp-filters__trigger { display: none; }
+/* --------------------------------------------------------- results bar */
+.jp-jobs__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--jp-space-3);
+  flex-wrap: wrap;
+  min-height: 36px;
+  margin-bottom: var(--jp-space-3);
+}
 
+.jp-jobs__count { font-size: var(--jp-fs-body); color: var(--jp-ink-secondary); }
+.jp-jobs__count strong {
+  font-family: var(--jp-font-display);
+  font-stretch: var(--jp-display-stretch);
+  font-size: var(--jp-fs-h2);
+  font-weight: var(--jp-fw-bold);
+  color: var(--jp-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.jp-jobs__tools { display: flex; align-items: center; gap: var(--jp-space-2); }
+
+/* Label beside the select rather than above it. */
+.jp-jobs__sort .jp-field { flex-direction: row; align-items: center; gap: var(--jp-space-2); }
+.jp-jobs__sort .jp-field__label { white-space: nowrap; color: var(--jp-ink-muted); font-weight: var(--jp-fw-regular); }
+.jp-jobs__sort .jp-select { width: auto; min-width: 150px; font-size: var(--jp-fs-sm); }
+
+/* The rail is the desktop presentation; the trigger opens the same filters in a drawer. */
+.jp-filters__trigger { display: none; }
+.jp-jobs__trigger-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--jp-space-1);
+  border-radius: var(--jp-radius-pill);
+  background: var(--jp-accent);
+  color: var(--jp-accent-ink);
+  font-size: var(--jp-fs-label);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----------------------------------------------------------------- chips */
+.jp-fchips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--jp-space-2);
+  margin: 0 0 var(--jp-space-4);
+  padding: 0;
+}
+
+.jp-fchip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jp-space-2);
+  height: 30px;
+  padding: 0 var(--jp-space-2) 0 var(--jp-space-3);
+  border: var(--jp-border-width) solid var(--jp-accent-border);
+  border-radius: var(--jp-radius-pill);
+  background: var(--jp-accent-wash);
+  color: var(--jp-accent-active);
+  font: inherit;
+  font-size: var(--jp-fs-sm);
+  font-weight: var(--jp-fw-medium);
+  cursor: pointer;
+  transition: background-color var(--jp-duration) var(--jp-ease), border-color var(--jp-duration) var(--jp-ease);
+}
+.jp-fchip:hover { background: var(--jp-surface); border-color: var(--jp-accent); }
+.jp-fchip:active { transform: scale(0.97); }
+
+.jp-fchips__clear {
+  border: 0;
+  background: none;
+  padding: 0 var(--jp-space-2);
+  height: 30px;
+  font: inherit;
+  font-size: var(--jp-fs-sm);
+  color: var(--jp-ink-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.jp-fchips__clear:hover { color: var(--jp-ink); }
+
+/* ------------------------------------------------------------ pagination */
 .jp-pagination {
   display: flex;
   align-items: center;
@@ -41,8 +214,34 @@
   margin-top: var(--jp-space-4);
 }
 
+/* ------------------------------------------------------------ responsive */
 @media (max-width: 900px) {
-  .jp-joblist { grid-template-columns: 1fr; }
-  .jp-joblist__rail { display: none; }
+  .jp-jobs__grid { grid-template-columns: 1fr; gap: 0; }
+  .jp-jobs__rail { display: none; }
   .jp-filters__trigger { display: inline-flex; }
+  .jp-jobs__search { margin-bottom: var(--jp-space-5); }
 }
+
+@media (max-width: 640px) {
+  .jp-jobs > .jp-display { margin-bottom: var(--jp-space-3); }
+
+  /* Phone: the two fields stack, the button spans the bottom. */
+  .jp-jobs__search { grid-template-columns: 1fr; padding: 0; }
+  .jp-jobs__field + .jp-jobs__field { border-left: 0; border-top: var(--jp-border); }
+  .jp-jobs__go { margin: var(--jp-space-1); }
+
+  .jp-jobs__bar { margin-bottom: var(--jp-space-3); }
+  .jp-jobs__tools { width: 100%; }
+  .jp-jobs__tools .jp-filters__trigger { height: 40px; }
+  .jp-jobs__sort { flex: 1; }
+  .jp-jobs__sort .jp-field__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .jp-jobs__sort .jp-field, .jp-jobs__sort .jp-select-wrap { flex: 1; }
+  .jp-jobs__sort .jp-select { width: 100%; height: 40px; }
+  .jp-fchip, .jp-fchips__clear { height: 36px; }
+
+  .jp-jobs .jp-list { margin-inline: calc(var(--jp-gutter-sm) * -1); border-radius: 0; border-inline: 0; }
+  .jp-pagination .jp-btn { height: 40px; }
+}
+
+/* In the drawer the dialog head already draws the rule above the first group. */
+.jp-drawer .jp-refine__group:first-child { border-top: 0; padding-top: 0; }

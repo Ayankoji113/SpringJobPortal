@@ -89,9 +89,13 @@ public class JobController {
         return ResponseEntity.ok(savedJobService.getByUser(principal.getId()));
     }
 
+    /** Public. {@code principal} is null for anonymous visitors, which the service expects. */
     @GetMapping("/{postId}")
-    public ResponseEntity<JobResponse> getJob(@PathVariable Integer postId) {
-        return ResponseEntity.ok(jobService.viewById(postId));
+    public ResponseEntity<JobResponse> getJob(
+            @PathVariable Integer postId,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return ResponseEntity.ok(jobService.viewById(postId, principal));
     }
 
     @GetMapping("/{postId}/is-saved")

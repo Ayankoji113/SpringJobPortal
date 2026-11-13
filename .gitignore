@@ -47,3 +47,6 @@ uploads/
 /dist/
 /nbdist/
 /.nb-gradle/
+
+# Bundled SPA: the Dockerfile copies the frontend build here inside the image only
+/src/main/resources/static/

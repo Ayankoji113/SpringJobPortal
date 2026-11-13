@@ -56,6 +56,11 @@ export const applyToJob = async (jobId, coverLetter) => {
     return response.data;
 };
 
+export const applyToJobs = async (jobIds) => {
+    const response = await api.post('/applications/bulk', { jobIds });
+    return response.data;
+};
+
 export const getMyApplications = async () => {
     const response = await api.get('/applications/my');
     return response.data;
@@ -66,8 +71,23 @@ export const getApplicationsForJob = async (jobId) => {
     return response.data;
 };
 
-export const updateApplicationStatus = async (applicationId, status) => {
-    const response = await api.patch(`/applications/${applicationId}/status`, { status });
+export const updateApplicationStatus = async (applicationId, status, note) => {
+    const response = await api.patch(`/applications/${applicationId}/status`, { status, note });
+    return response.data;
+};
+
+export const withdrawApplication = async (applicationId) => {
+    const response = await api.post(`/applications/${applicationId}/withdraw`);
+    return response.data;
+};
+
+export const getApplicationTimeline = async (applicationId) => {
+    const response = await api.get(`/applications/${applicationId}/timeline`);
+    return response.data;
+};
+
+export const getEmployerResponsiveness = async (employerId) => {
+    const response = await api.get(`/applications/employer/${employerId}/responsiveness`);
     return response.data;
 };
 

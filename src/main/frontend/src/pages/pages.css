@@ -16,12 +16,9 @@
 }
 
 .jp-table th {
-  font-family: var(--jp-font-mono);
   font-size: var(--jp-fs-label);
-  letter-spacing: var(--jp-ls-label);
-  text-transform: uppercase;
   color: var(--jp-ink-muted);
-  font-weight: var(--jp-fw-medium);
+  font-weight: var(--jp-fw-semibold);
   white-space: nowrap;
 }
 
@@ -101,4 +98,32 @@
 
 @media (max-width: 640px) {
   .jp-form-grid { grid-template-columns: 1fr; }
+}
+
+/* Application history: a hairline rail, no cards. */
+.jp-timeline { margin-top: var(--jp-space-2); }
+.jp-timeline summary { cursor: pointer; color: var(--jp-ink-secondary); width: fit-content; }
+.jp-timeline__list {
+  list-style: none;
+  margin: var(--jp-space-2) 0 0;
+  padding: 0 0 0 var(--jp-space-3);
+  border-left: var(--jp-border-width) solid var(--jp-line-strong);
+  display: grid;
+  gap: var(--jp-space-2);
+}
+.jp-timeline__note { margin: var(--jp-space-1) 0 0; color: var(--jp-ink-secondary); }
+
+.jp-row-actions { display: flex; flex-wrap: wrap; gap: var(--jp-space-2); align-items: center; }
+/* Sits above the row-wide link overlay, like the other interactive children of a job row. */
+.jp-jobrow .jp-timeline { position: relative; z-index: 1; }
+
+/* "Apply" tick on a recommended job. Above the row link overlay so it stays clickable. */
+.jp-pick {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jp-space-1);
+  margin-top: var(--jp-space-2);
+  cursor: pointer;
 }

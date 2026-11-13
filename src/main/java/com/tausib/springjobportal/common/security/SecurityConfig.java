@@ -1,6 +1,7 @@
 package com.tausib.springjobportal.common.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -15,6 +16,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -38,11 +40,19 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/jobs/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/jobs").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/companies/**").permitAll()
+                // Employer response record, shown on public job pages
+                .requestMatchers(org.springframework.http.HttpMethod.GET,
+                        "/api/applications/employer/*/responsiveness").permitAll()
                 // File serving
                 .requestMatchers("/api/files/**").permitAll()
-                // Swagger
+                // Swagger (served only while springdoc is enabled, see SWAGGER_ENABLED)
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                // Everything else requires auth
+                // Operations: exactly these two actuator endpoints, nothing else under /actuator
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/actuator/health", "/actuator/info").permitAll()
+                // The rest of the API (and any other actuator path) requires auth
+                .requestMatchers("/api/**", "/actuator/**").authenticated()
+                // Bundled SPA: static assets and client-side routes such as /job/3 (SpaWebConfig)
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/**").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -52,10 +62,14 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /** Comma-separated; APP_CORS_ALLOWED_ORIGINS in the environment. */
+    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
+    private List<String> allowedOrigins;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000"));
+        configuration.setAllowedOrigins(allowedOrigins.stream().map(String::trim).filter(s -> !s.isEmpty()).toList());
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control"));
         configuration.setAllowCredentials(true);

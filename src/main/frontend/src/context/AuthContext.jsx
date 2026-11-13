@@ -39,7 +39,8 @@ export const AuthProvider = ({ children }) => {
             updateUser,
             isAuthenticated: !!user,
             isEmployer: user?.role === 'EMPLOYER',
-            isJobSeeker: user?.role === 'JOB_SEEKER'
+            isJobSeeker: user?.role === 'JOB_SEEKER',
+            isAdmin: user?.role === 'ADMIN'
         }}>
             {children}
         </AuthContext.Provider>

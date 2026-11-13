@@ -1,0 +1,167 @@
+/* Notifications, Profile and NotFound. Tokens only. */
+
+/* ----------------------------------------------------------- notifications */
+.jp-notes__group + .jp-notes__group { margin-top: var(--jp-space-6); }
+.jp-notes__group > .jp-label { margin-bottom: var(--jp-space-2); }
+.jp-notes__list { list-style: none; }
+
+.jp-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--jp-space-4);
+  padding: var(--jp-space-4) var(--jp-space-5);
+  border-bottom: var(--jp-border);
+}
+.jp-note:last-child { border-bottom: 0; }
+
+.jp-note__icon { flex: none; margin-top: 2px; color: var(--jp-ink-muted); }
+.jp-note--unread .jp-note__icon { color: var(--jp-accent); }
+
+.jp-note__main { flex: 1; min-width: 0; }
+
+/* Unread is said three ways: the group heading, the dot and the weight. */
+.jp-note__title {
+  display: flex;
+  align-items: center;
+  gap: var(--jp-space-2);
+  font-size: var(--jp-fs-h3);
+  line-height: var(--jp-lh-h3);
+  font-weight: var(--jp-fw-regular);
+  color: var(--jp-ink-secondary);
+}
+.jp-note--unread .jp-note__title { font-weight: var(--jp-fw-semibold); color: var(--jp-ink); }
+.jp-note__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--jp-radius-pill);
+  background: var(--jp-accent);
+}
+
+.jp-note__msg { margin-top: var(--jp-space-1); max-width: 70ch; color: var(--jp-ink-muted); }
+.jp-note--unread .jp-note__msg { color: var(--jp-ink-secondary); }
+
+.jp-note__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--jp-space-1) var(--jp-space-4);
+  margin-top: var(--jp-space-2);
+}
+.jp-note__foot a { font-weight: var(--jp-fw-medium); }
+
+.jp-note__actions { display: flex; gap: var(--jp-space-1); }
+
+@media (max-width: 720px) {
+  .jp-note { gap: var(--jp-space-3); padding: var(--jp-space-4); }
+  .jp-note__actions { flex-direction: column; margin-right: calc(var(--jp-space-2) * -1); }
+  .jp-note__actions .jp-btn--icon { width: 40px; height: 40px; }
+  .jp-note__foot a { padding-block: var(--jp-space-2); }
+}
+
+/* ----------------------------------------------------------------- profile */
+.jp-profile {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--jp-space-7);
+  align-items: start;
+}
+.jp-profile__form { grid-column: 1; grid-row: 1; min-width: 0; }
+
+.jp-profile__aside {
+  grid-column: 2;
+  grid-row: 1;
+  position: sticky;
+  top: calc(var(--jp-header-height) + var(--jp-space-5));
+  display: grid;
+  gap: var(--jp-space-5);
+}
+
+/* The identity block is one object, so it gets the one bordered surface here. */
+.jp-ident {
+  display: grid;
+  gap: var(--jp-space-4);
+  justify-items: start;
+  padding: var(--jp-space-5);
+  background: var(--jp-surface);
+  border: var(--jp-border);
+  border-radius: var(--jp-radius-lg);
+}
+.jp-ident__top { display: flex; align-items: center; gap: var(--jp-space-3); }
+.jp-ident__facts { flex-direction: column; gap: var(--jp-space-2); }
+.jp-ident__facts .jp-fact span { overflow-wrap: anywhere; }
+
+.jp-side-block { display: grid; gap: var(--jp-space-2); padding-top: var(--jp-space-4); border-top: var(--jp-border); }
+
+.jp-meter__count strong {
+  font-family: var(--jp-font-display);
+  font-stretch: var(--jp-display-stretch);
+  font-size: var(--jp-fs-h1);
+  font-weight: var(--jp-fw-bold);
+}
+.jp-meter { display: flex; gap: 3px; margin-bottom: var(--jp-space-1); }
+.jp-meter span { flex: 1; height: 8px; border-radius: 1px; background: var(--jp-n-200); }
+.jp-meter .jp-meter__on { background: var(--jp-accent); }
+.jp-meter__todo { padding-left: var(--jp-space-4); color: var(--jp-ink-secondary); }
+
+.jp-check { display: flex; align-items: center; gap: var(--jp-space-2); min-height: 40px; font-weight: var(--jp-fw-medium); cursor: pointer; }
+.jp-check input { width: 18px; height: 18px; accent-color: var(--jp-accent); }
+
+/* A section is a ruled row: its name on the left, its fields on the right. */
+.jp-psec {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: var(--jp-space-6);
+  padding-block: var(--jp-space-6);
+  border-top: var(--jp-border);
+}
+.jp-psec:first-child { border-top: 0; padding-top: 0; }
+.jp-psec__head p { margin-top: var(--jp-space-1); }
+.jp-psec__body { display: flex; flex-direction: column; gap: var(--jp-space-4); min-width: 0; }
+.jp-skill-preview { list-style: none; }
+
+.jp-resume {
+  display: flex;
+  align-items: center;
+  gap: var(--jp-space-3);
+  flex-wrap: wrap;
+  padding: var(--jp-space-4);
+  background: var(--jp-surface);
+  border: var(--jp-border);
+  border-radius: var(--jp-radius-lg);
+}
+.jp-resume > svg { flex: none; color: var(--jp-ink-muted); }
+.jp-resume__name { flex: 1; min-width: 12ch; }
+.jp-resume__file { font-weight: var(--jp-fw-medium); overflow-wrap: anywhere; }
+
+/* Stays in reach while the form scrolls under it. */
+.jp-savebar {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--jp-space-3);
+  flex-wrap: wrap;
+  padding-block: var(--jp-space-3);
+  background: var(--jp-ground);
+  border-top: var(--jp-border-strong);
+}
+
+@media (max-width: 960px) {
+  .jp-profile { grid-template-columns: minmax(0, 1fr); gap: var(--jp-space-6); }
+  .jp-profile__form, .jp-profile__aside { grid-column: 1; grid-row: auto; }
+  .jp-profile__aside { position: static; }
+}
+
+@media (max-width: 720px) {
+  .jp-psec { grid-template-columns: minmax(0, 1fr); gap: var(--jp-space-4); padding-block: var(--jp-space-5); }
+  /* Clear of the phone tab bar. */
+  .jp-savebar { bottom: calc(var(--jp-tabbar-height) + env(safe-area-inset-bottom)); }
+}
+
+/* --------------------------------------------------------------- not found */
+.jp-notfound { display: grid; gap: var(--jp-space-4); justify-items: start; padding-block: var(--jp-space-8); }
+.jp-notfound__body { max-width: 56ch; color: var(--jp-ink-secondary); }
+.jp-notfound__body code { overflow-wrap: anywhere; color: var(--jp-ink); }

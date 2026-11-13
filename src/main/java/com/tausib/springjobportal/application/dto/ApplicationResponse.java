@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Wire shape of an application. The module used to return the {@code JobApplication} entity, whose
@@ -23,4 +24,8 @@ public class ApplicationResponse {
     private String coverLetter;
     private ApplicationStatus status;
     private LocalDateTime appliedDate;
+    private LocalDateTime respondBy;
+    private LocalDateTime respondedAt;
+    /** The stages the employer may move this application to next. Empty once it is finished. */
+    private List<ApplicationStatus> nextStatuses;
 }

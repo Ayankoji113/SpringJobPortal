@@ -1,0 +1,14 @@
+# Never send local secrets or build output into the image build context.
+config/
+.env
+.env.*
+!.env.example
+.git/
+target/
+uploads/
+**/node_modules/
+src/main/frontend/dist/
+src/main/frontend/design-audit/
+.idea/
+.vscode/
+*.log

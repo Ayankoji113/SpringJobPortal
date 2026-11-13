@@ -13,6 +13,7 @@ import { Login, Register, ForgotPassword, ResetPassword } from './pages/auth';
 import { MyApplications, SavedJobs, Recommendations } from './pages/seeker';
 import { EmployerDashboard, ManageApplications, PostJob } from './pages/employer';
 import { Home, Notifications, Profile, NotFound } from './pages/misc';
+import { AdminReview } from './pages/admin';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,6 +56,8 @@ export default function App() {
                 <Route path="/my-applications" element={<ProtectedRoute requireJobSeeker>{guard(<MyApplications />)}</ProtectedRoute>} />
                 <Route path="/saved-jobs" element={<ProtectedRoute requireJobSeeker>{guard(<SavedJobs />)}</ProtectedRoute>} />
                 <Route path="/recommendations" element={<ProtectedRoute requireJobSeeker>{guard(<Recommendations />)}</ProtectedRoute>} />
+
+                <Route path="/admin" element={<ProtectedRoute requireAdmin>{guard(<AdminReview />)}</ProtectedRoute>} />
 
                 <Route path="*" element={guard(<NotFound />)} />
               </Routes>

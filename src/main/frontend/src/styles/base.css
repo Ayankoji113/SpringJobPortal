@@ -68,6 +68,11 @@ a:hover {
   text-wrap: balance;
 }
 
+/* Only the two largest steps are set wide; at row sizes the width axis costs
+   more line length than it earns. */
+.jp-display,
+.jp-h1 { font-stretch: var(--jp-display-stretch); }
+
 .jp-display {
   font-size: var(--jp-fs-display);
   line-height: var(--jp-lh-display);
@@ -105,14 +110,14 @@ a:hover {
   color: var(--jp-ink-muted);
 }
 
+/* A small heading for a group of facts. Sentence case, body face: it names the
+   group, it does not shout over it. */
 .jp-label {
-  font-family: var(--jp-font-mono);
   font-size: var(--jp-fs-label);
   line-height: var(--jp-lh-label);
   letter-spacing: var(--jp-ls-label);
-  text-transform: uppercase;
   color: var(--jp-ink-muted);
-  font-weight: var(--jp-fw-medium);
+  font-weight: var(--jp-fw-semibold);
 }
 
 .jp-data {

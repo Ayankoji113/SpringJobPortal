@@ -1,64 +1,75 @@
 import React, { useContext, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { SlidersHorizontal } from 'lucide-react';
+import { MapPin, Search, SlidersHorizontal, X } from 'lucide-react';
 import * as jobService from '../services/jobService';
 import { errorMessage } from '../services/api';
 import { AuthContext } from '../context/auth-context';
 import { JobRow, JobRowSkeletonList } from '../components/JobRow';
 import { Button, EmptyState, Input, Modal, Select } from '../components/ui';
 import { useToast } from '../components/ui/toast-context';
-import { JOB_TYPES } from '../lib/format';
+import { JOB_TYPES, jobTypeLabel } from '../lib/format';
 import './joblist.css';
 
 const PAGE_SIZE = 10;
-const EMPTY = { keyword: '', location: '', jobType: '', minExp: '', maxExp: '' };
+const FILTER_KEYS = ['keyword', 'location', 'jobType', 'isRemote', 'minExp', 'maxExp'];
+const EMPTY = { keyword: '', location: '', jobType: '', isRemote: '', minExp: '', maxExp: '' };
 
-function FilterForm({ draft, setDraft, onApply, onClear, activeCount }) {
+/* Only /jobs/search sorts; these are its sortBy/sortDir parameters. */
+const SORTS = {
+  newest: { label: 'Newest first', sortBy: 'postedDate', sortDir: 'desc' },
+  pay: { label: 'Highest pay', sortBy: 'salaryMax', sortDir: 'desc' },
+};
+
+function chipText(key, value) {
+  switch (key) {
+    case 'keyword': return `“${value}”`;
+    case 'jobType': return jobTypeLabel(value);
+    case 'isRemote': return 'Remote only';
+    case 'minExp': return `At least ${value} yrs`;
+    case 'maxExp': return `At most ${value} yrs`;
+    default: return value;
+  }
+}
+
+/** Everything except the search bar: type, remote, experience. */
+function Refine({ draft, setDraft, onApply, onClear, activeCount, idPrefix }) {
+  const set = (key) => (e) => setDraft({ ...draft, [key]: e.target.value });
   return (
-    <form
-      className="jp-filters"
-      onSubmit={(e) => { e.preventDefault(); onApply(); }}
-    >
-      <Input
-        label="Keyword"
-        placeholder="Title or description"
-        value={draft.keyword}
-        onChange={(e) => setDraft({ ...draft, keyword: e.target.value })}
-      />
-      <Input
-        label="Location"
-        placeholder="Pune, Remote…"
-        value={draft.location}
-        onChange={(e) => setDraft({ ...draft, location: e.target.value })}
-      />
-      <Select
-        label="Job type"
-        value={draft.jobType}
-        onChange={(e) => setDraft({ ...draft, jobType: e.target.value })}
-      >
-        <option value="">Any</option>
-        {JOB_TYPES.map(([value, text]) => <option key={value} value={value}>{text}</option>)}
-      </Select>
-      <div className="jp-filters__pair">
-        <Input
-          label="Min years"
-          type="number"
-          min="0"
-          value={draft.minExp}
-          onChange={(e) => setDraft({ ...draft, minExp: e.target.value })}
-        />
-        <Input
-          label="Max years"
-          type="number"
-          min="0"
-          value={draft.maxExp}
-          onChange={(e) => setDraft({ ...draft, maxExp: e.target.value })}
-        />
-      </div>
-      <div className="jp-filters__actions">
-        <Button type="submit" variant="primary" block>Apply filters</Button>
-        {activeCount > 0 && <Button type="button" variant="ghost" block onClick={onClear}>Clear all</Button>}
+    <form className="jp-refine" onSubmit={(e) => { e.preventDefault(); onApply(); }}>
+      <fieldset className="jp-refine__group">
+        <legend className="jp-refine__legend">Job type</legend>
+        {[['', 'Any type'], ...JOB_TYPES].map(([value, text]) => (
+          <label key={value || 'any'} className="jp-refine__option">
+            <input type="radio" name={`${idPrefix}-jobType`} value={value}
+              checked={draft.jobType === value} onChange={set('jobType')} />
+            {text}
+          </label>
+        ))}
+      </fieldset>
+
+      <fieldset className="jp-refine__group">
+        <legend className="jp-refine__legend">Workplace</legend>
+        <label className="jp-refine__option">
+          <input type="checkbox" checked={draft.isRemote === 'true'}
+            onChange={(e) => setDraft({ ...draft, isRemote: e.target.checked ? 'true' : '' })} />
+          Remote only
+        </label>
+      </fieldset>
+
+      <fieldset className="jp-refine__group">
+        <legend className="jp-refine__legend">Experience in years</legend>
+        <div className="jp-refine__pair">
+          <Input label="From" type="number" min="0" inputMode="numeric" placeholder="0"
+            value={draft.minExp} onChange={set('minExp')} />
+          <Input label="To" type="number" min="0" inputMode="numeric" placeholder="Any"
+            value={draft.maxExp} onChange={set('maxExp')} />
+        </div>
+      </fieldset>
+
+      <div className="jp-refine__actions">
+        <Button type="submit" variant="primary" block>Show results</Button>
+        {activeCount > 0 && <Button type="button" variant="ghost" block onClick={onClear}>Clear all filters</Button>}
       </div>
     </form>
   );
@@ -71,18 +82,17 @@ export function JobList() {
   const queryClient = useQueryClient();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const applied = {
-    keyword: params.get('keyword') || '',
-    location: params.get('location') || '',
-    jobType: params.get('jobType') || '',
-    minExp: params.get('minExp') || '',
-    maxExp: params.get('maxExp') || '',
-  };
+  // The URL is the state: /jobs?keyword=..&location=.. from the home hero lands pre-filled,
+  // and every search writes back to it so results can be shared.
+  const applied = Object.fromEntries(FILTER_KEYS.map((k) => [k, params.get(k) || '']));
+  const sort = SORTS[params.get('sort')] ? params.get('sort') : 'newest';
   const page = Number(params.get('page') || 0);
-  const activeCount = Object.values(applied).filter(Boolean).length;
+  const active = FILTER_KEYS.filter((k) => applied[k]);
+  const activeCount = active.length;
+  const refineCount = active.filter((k) => k !== 'keyword' && k !== 'location').length;
 
-  /* Keyed by the query string: when the URL changes the draft is re-initialised
-     by remounting, which avoids syncing state inside an effect. */
+  /* Re-initialise the draft when the URL changes (back/forward, chip removal)
+     without syncing state inside an effect. */
   const [draft, setDraft] = useState(applied);
   const [draftKey, setDraftKey] = useState(params.toString());
   if (draftKey !== params.toString()) {
@@ -91,13 +101,12 @@ export function JobList() {
   }
 
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ['jobs', applied, page],
+    queryKey: ['jobs', applied, sort, page],
     queryFn: () => {
-      const query = { page, size: PAGE_SIZE };
-      Object.entries(applied).forEach(([k, v]) => { if (v) query[k] = v; });
-      return activeCount > 0
-        ? jobService.searchJobsAdvanced(query)
-        : jobService.getJobsPaginated(page, PAGE_SIZE);
+      if (activeCount === 0 && sort === 'newest') return jobService.getJobsPaginated(page, PAGE_SIZE);
+      const query = { page, size: PAGE_SIZE, sortBy: SORTS[sort].sortBy, sortDir: SORTS[sort].sortDir };
+      active.forEach((k) => { query[k] = applied[k]; });
+      return jobService.searchJobsAdvanced(query);
     },
   });
 
@@ -117,58 +126,106 @@ export function JobList() {
     onError: (err) => toast(errorMessage(err, 'Could not update saved jobs.'), 'error'),
   });
 
+  /** Writes filters + sort to the URL; any change of criteria starts again at page one. */
+  const commit = (filters, nextSort = sort) => {
+    const p = new URLSearchParams();
+    FILTER_KEYS.forEach((k) => { const v = String(filters[k] ?? '').trim(); if (v) p.set(k, v); });
+    if (nextSort !== 'newest') p.set('sort', nextSort);
+    setParams(p);
+  };
+
+  const applyFilters = () => { commit(draft); setDrawerOpen(false); };
+  const clearFilters = () => { setDraft(EMPTY); commit(EMPTY); setDrawerOpen(false); };
+  const removeFilter = (key) => commit({ ...applied, [key]: '' });
+
   const setPage = (next) => {
     const p = new URLSearchParams(params);
     p.set('page', String(next));
     setParams(p);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const applyFilters = () => {
-    const p = new URLSearchParams();
-    Object.entries(draft).forEach(([k, v]) => { if (v) p.set(k, v); });
-    setParams(p);
-    setDrawerOpen(false);
-  };
-
-  const clearFilters = () => {
-    setDraft(EMPTY);
-    setParams(new URLSearchParams());
-    setDrawerOpen(false);
+    window.scrollTo({ top: 0 });
   };
 
   const jobs = data?.content ?? [];
   const totalPages = data?.totalPages ?? 0;
   const totalJobs = data?.totalElements ?? 0;
+  const first = page * PAGE_SIZE + 1;
+  const last = page * PAGE_SIZE + jobs.length;
+
+  const refineProps = { draft, setDraft, onApply: applyFilters, onClear: clearFilters, activeCount };
 
   return (
-    <div className="jp-container jp-page">
-      <div className="jp-page-head">
-        <div>
-          <h1 className="jp-display">Jobs</h1>
-          <p className="jp-sm jp-muted">
-            {isPending ? 'Searching…' : `${totalJobs} ${totalJobs === 1 ? 'opening' : 'openings'}${activeCount ? ' matching your filters' : ''}`}
-          </p>
-        </div>
-        <Button className="jp-filters__trigger" onClick={() => setDrawerOpen(true)}>
-          <SlidersHorizontal size={15} aria-hidden="true" />
-          Filters{activeCount > 0 ? ` (${activeCount})` : ''}
-        </Button>
-      </div>
+    <div className="jp-container jp-page jp-jobs">
+      <h1 className="jp-display">Find a job</h1>
 
-      <div className="jp-joblist">
-        <aside className="jp-joblist__rail" aria-label="Filters">
-          <FilterForm draft={draft} setDraft={setDraft} onApply={applyFilters} onClear={clearFilters} activeCount={activeCount} />
+      <form className="jp-jobs__search" role="search" onSubmit={(e) => { e.preventDefault(); applyFilters(); }}>
+        <label className="jp-jobs__field">
+          <Search size={17} aria-hidden="true" />
+          <span className="jp-sr-only">Keyword</span>
+          <input type="search" placeholder="Job title, skill or keyword" value={draft.keyword}
+            onChange={(e) => setDraft({ ...draft, keyword: e.target.value })} />
+        </label>
+        <label className="jp-jobs__field">
+          <MapPin size={17} aria-hidden="true" />
+          <span className="jp-sr-only">Location</span>
+          <input type="text" placeholder="City, or Remote" value={draft.location}
+            onChange={(e) => setDraft({ ...draft, location: e.target.value })} />
+        </label>
+        <Button type="submit" variant="primary" size="lg" className="jp-jobs__go">Search</Button>
+      </form>
+
+      <div className="jp-jobs__grid">
+        <aside className="jp-jobs__rail" aria-labelledby="jp-refine-title">
+          <h2 id="jp-refine-title" className="jp-h3">Filters</h2>
+          <Refine {...refineProps} idPrefix="rail" />
         </aside>
 
-        <div className="jp-joblist__results">
-          {isPending && <JobRowSkeletonList />}
+        <section className="jp-jobs__results" aria-labelledby="jp-results-count">
+          <div className="jp-jobs__bar">
+            <p id="jp-results-count" className="jp-jobs__count" aria-live="polite">
+              {isPending ? 'Searching…' : isError ? 'Results unavailable' : (
+                <>
+                  <strong>{totalJobs}</strong> {totalJobs === 1 ? 'opening' : 'openings'}
+                  {totalPages > 1 && <span className="jp-muted">, showing {first} to {last}</span>}
+                </>
+              )}
+            </p>
+            <div className="jp-jobs__tools">
+              <Button className="jp-filters__trigger" onClick={() => setDrawerOpen(true)}>
+                <SlidersHorizontal size={15} aria-hidden="true" />
+                Filters{refineCount > 0 && <span className="jp-jobs__trigger-count">{refineCount}</span>}
+              </Button>
+              <div className="jp-jobs__sort">
+                <Select label="Sort by" value={sort} onChange={(e) => commit(applied, e.target.value)}>
+                  {Object.entries(SORTS).map(([key, s]) => <option key={key} value={key}>{s.label}</option>)}
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {activeCount > 0 && (
+            <ul className="jp-fchips" aria-label="Active filters">
+              {active.map((key) => (
+                <li key={key}>
+                  <button type="button" className="jp-fchip" onClick={() => removeFilter(key)}
+                    aria-label={`Remove filter: ${chipText(key, applied[key])}`}>
+                    {chipText(key, applied[key])}
+                    <X size={13} aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+              {activeCount > 1 && (
+                <li><button type="button" className="jp-fchips__clear" onClick={clearFilters}>Clear all</button></li>
+              )}
+            </ul>
+          )}
+
+          {isPending && <JobRowSkeletonList count={6} />}
 
           {isError && !isPending && (
             <EmptyState
               title="Could not load jobs"
-              body={errorMessage(error)}
-              action={<Button variant="primary" onClick={() => queryClient.invalidateQueries({ queryKey: ['jobs'] })}>Retry</Button>}
+              body={`${errorMessage(error, 'The job service did not respond.')} Your filters are kept; try again.`}
+              action={<Button variant="primary" onClick={() => queryClient.invalidateQueries({ queryKey: ['jobs'] })}>Try again</Button>}
             />
           )}
 
@@ -176,7 +233,7 @@ export function JobList() {
             <EmptyState
               title={activeCount ? 'No jobs match these filters' : 'No jobs posted yet'}
               body={activeCount
-                ? 'Try widening the experience range or clearing the location.'
+                ? 'Remove a filter above, widen the experience range, or clear everything to see all openings.'
                 : 'Once employers start posting, openings will appear here.'}
               action={activeCount ? <Button variant="primary" onClick={clearFilters}>Clear filters</Button> : null}
             />
@@ -197,18 +254,18 @@ export function JobList() {
 
               {totalPages > 1 && (
                 <nav className="jp-pagination" aria-label="Pagination">
-                  <Button size="sm" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</Button>
+                  <Button disabled={page === 0} onClick={() => setPage(page - 1)}>Previous page</Button>
                   <span className="jp-sm jp-muted">Page {page + 1} of {totalPages}</span>
-                  <Button size="sm" disabled={page + 1 >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
+                  <Button disabled={page + 1 >= totalPages} onClick={() => setPage(page + 1)}>Next page</Button>
                 </nav>
               )}
             </>
           )}
-        </div>
+        </section>
       </div>
 
       <Modal open={drawerOpen} onOpenChange={setDrawerOpen} title="Filters" variant="drawer">
-        <FilterForm draft={draft} setDraft={setDraft} onApply={applyFilters} onClear={clearFilters} activeCount={activeCount} />
+        <Refine {...refineProps} idPrefix="drawer" />
       </Modal>
     </div>
   );

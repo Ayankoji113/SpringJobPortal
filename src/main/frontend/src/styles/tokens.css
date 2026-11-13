@@ -56,6 +56,21 @@
   --jp-danger-hover:  #8a251c;
   --jp-danger-ink:    #ffffff;
 
+  /* Band. A deep green-black used for the few full-width dark surfaces: the
+     home hero, the sign-in panel, the footer. It is the accent taken almost to
+     black, so the dark surfaces and the teal read as one family. */
+  --jp-band:        #12211f;
+  --jp-band-raised: #1b2f2c;
+  --jp-band-line:   #2c423e;
+  --jp-band-ink:    #f4f2ee;
+  --jp-band-muted:  #a3b3ae;
+
+  /* Signal. Marigold, and it means one thing: time. It marks the response
+     clock and nothing else, so wherever it appears a deadline is in play. */
+  --jp-signal:      #e9a820;
+  --jp-signal-wash: #fbf1d6;
+  --jp-signal-ink:  #1a1815;
+
   /* Semantic surface + text aliases. Components use these, not the raw scale,
      so a future dark theme is a matter of redefining this block alone. */
   --jp-ground:        var(--jp-n-50);
@@ -84,6 +99,10 @@
 
   /* Size / line-height / tracking travel together — a heading is not just
      bigger, it is tighter. */
+  /* Archivo is a variable font with a width axis. Headlines are set wide and
+     heavy, which is the one typographic gesture the product owns. */
+  --jp-display-stretch: 118%;
+  --jp-fs-hero: clamp(2.25rem, 5.4vw, 4.25rem);
   --jp-fs-display: 2rem;      /* 32px */
   --jp-lh-display: 1.15;
   --jp-ls-display: -0.025em;
@@ -107,9 +126,9 @@
   --jp-fs-sm: 0.8125rem;      /* 13px — row metadata */
   --jp-lh-sm: 1.5;
 
-  --jp-fs-label: 0.6875rem;   /* 11px — uppercase labels, mono */
+  --jp-fs-label: 0.75rem;     /* 12px — small sentence-case labels */
   --jp-lh-label: 1.4;
-  --jp-ls-label: 0.07em;
+  --jp-ls-label: 0;
 
   --jp-fs-data: 0.8125rem;    /* 13px — salary, counts, dates */
   --jp-lh-data: 1.4;
@@ -156,6 +175,8 @@
   --jp-duration-fast: 100ms;
   --jp-duration: 160ms;
   --jp-ease: cubic-bezier(0.2, 0, 0.2, 1);
+  --jp-duration-slow: 420ms;                    /* things that arrive: modal, clock fill */
+  --jp-ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* decelerate into place */
 
   /* ------------------------------------------------------------- elevation
      The only shadow in the system. Cards do not get one. */
@@ -167,7 +188,8 @@
   --jp-container-max: 1200px;
   --jp-gutter: var(--jp-space-5);
   --jp-gutter-sm: var(--jp-space-4);
-  --jp-header-height: 56px;
+  --jp-header-height: 60px;
+  --jp-tabbar-height: 58px;   /* mobile bottom navigation */
   --jp-rail-width: 240px;
 
   /* ------------------------------------------------------------------ z
@@ -183,5 +205,6 @@
   :root {
     --jp-duration-fast: 0ms;
     --jp-duration: 0ms;
+    --jp-duration-slow: 0ms;
   }
 }

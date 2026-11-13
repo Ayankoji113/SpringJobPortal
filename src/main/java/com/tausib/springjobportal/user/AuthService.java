@@ -1,5 +1,6 @@
 package com.tausib.springjobportal.user;
 
+import com.tausib.springjobportal.common.exception.ForbiddenOperationException;
 import com.tausib.springjobportal.common.mail.EmailService;
 import com.tausib.springjobportal.common.security.JwtService;
 import com.tausib.springjobportal.user.dto.AuthRequest;
@@ -30,6 +31,12 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        // The role arrives in the request body, so this endpoint would otherwise hand out ADMIN
+        // to anyone who asked for it.
+        if (!request.getRole().isSelfAssignable()) {
+            throw new ForbiddenOperationException("That role cannot be chosen at registration");
+        }
+
         if (userRepo.findByEmail(request.getEmail()).isPresent()) {
             throw new EmailAlreadyRegisteredException("Email already registered");
         }

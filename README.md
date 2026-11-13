@@ -1,110 +1,63 @@
 # Spring Job Portal
 
-A modern, full-stack Job Portal application built using **Spring Boot** (Backend) and **React/Vite** (Frontend). 
+A job board built with Spring Boot and React. Seekers search verified postings, apply and follow each application; employers post jobs and must answer applicants within 14 days, and their response record is shown publicly. Admins review postings before they go live.
 
-This platform connects job seekers with employers, offering a seamless experience for posting jobs, managing applications, real-time notifications, and direct messaging between users.
+## Features
 
-## 🚀 Features
+**Job seekers:** JWT sign-up and login, profile with skills and resume, job search and filters, saved jobs, applying with a cover letter, applying to up to 5 picked recommendations at once (20 applications per day), a status timeline for every application, withdrawing an application, skill-match scores and a salary estimate.
 
-### For Job Seekers:
-- **User Authentication**: Secure signup and login using JWT.
-- **Profile Management**: Update your bio, skills, resume, and profile photo.
-- **Job Search & Filtering**: Browse and search for jobs based on title, location, and type.
-- **Job Applications**: Apply to jobs with a customized cover letter.
-- **My Applications**: Track the status of your applications (Pending, Reviewed, Accepted, Rejected).
-- **Saved Jobs**: Bookmark jobs to apply for them later.
-- **AI Tools**: AI-assisted resume review and cover letter generation.
+**Employers:** company profiles, job postings (reviewed by an admin before they are public), an applicant pipeline (`PENDING → REVIEWED → INTERVIEW → OFFERED → ACCEPTED`, or `REJECTED`), email reminders before the 14-day deadline, and a dashboard.
 
-### For Employers:
-- **Company Profile**: Create and manage company details.
-- **Post Jobs**: Create job postings with detailed descriptions and requirements.
-- **Manage Applications**: View applications submitted for your job postings, download resumes, and update application statuses.
-- **Employer Dashboard**: View stats on total jobs posted and applications received.
+**Admins:** a review queue for new and edited postings (publish, reject, suspend), featuring jobs, banning users, and an action log.
 
-### Platform Features:
-- **Real-time Messaging**: Direct messaging between employers and candidates.
-- **Notifications**: Real-time alerts for application updates and new messages.
-- **Admin Dashboard**: Platform overview and user/job management capabilities.
+Notifications are in-app (polled) and by email.
 
----
+## Tech stack
 
-## 🛠️ Tech Stack
+- Backend: Spring Boot 3.4 (Java 21), Spring Security with JWT, Spring Data JPA, PostgreSQL, Flyway, Spring AI (Gemini, salary narrative only), springdoc OpenAPI, Actuator.
+- Frontend: React 19, Vite, React Router, TanStack Query, Axios. Design system in [`src/main/frontend/DESIGN.md`](src/main/frontend/DESIGN.md).
 
-### Backend
-- **Framework**: Spring Boot 3.4
-- **Security**: Spring Security & JWT (JSON Web Tokens)
-- **Database**: PostgreSQL with Spring Data JPA
-- **API Documentation**: Swagger/OpenAPI 3
-- **File Storage**: Local File Storage for Resumes & Profile Photos
-- **Real-time**: Spring Boot WebSockets
-- **Other**: Lombok, Validation, AOP (Aspect-Oriented Programming)
+## Local development
 
-### Frontend
-- **Framework**: React 19 (via Vite)
-- **Routing**: React Router DOM
-- **Icons**: Lucide React
-- **Styling**: Modern CSS / Tailwind (if applicable)
-- **HTTP Client**: Axios
+Prerequisites: JDK 21 or newer, Node.js 20 or newer, PostgreSQL with a database named `JobPortalDB`.
 
----
+1. Put local secrets in `config/application.properties` (git-ignored, read automatically):
 
-## ⚙️ Local Development Setup
+   ```properties
+   spring.datasource.password=your-postgres-password
+   jwt.secret=base64-key-from-openssl-rand-base64-64
+   # optional
+   app.admin.email=you@example.com
+   spring.ai.openai.api-key=your-gemini-key
+   ```
 
-### Prerequisites
-- **Java 21** or higher
-- **Node.js** (v18+)
-- **PostgreSQL** (Running locally)
-- **Maven** (Optional, project includes Maven wrapper)
+   Environment variables (`SPRING_DATASOURCE_PASSWORD`, `JWT_SECRET`, ...) work too; see `.env.example`.
 
-### 1. Database Configuration
-Create a PostgreSQL database for the application (e.g., `jobportal_db`).
+2. Backend: `./mvnw spring-boot:run` (Windows: `mvnw.cmd spring-boot:run`). It starts on http://localhost:8080 and Flyway creates or upgrades the schema.
+3. Frontend: `cd src/main/frontend && npm install && npm run dev`, then open http://localhost:5173. No `.env` is needed.
 
-Update the `application.properties` (or `application.yml`) in `src/main/resources`:
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/jobportal_db
-spring.datasource.username=your_postgres_username
-spring.datasource.password=your_postgres_password
-```
+Tests: `./mvnw clean verify` (needs the database). Frontend: `npm run lint`, `npm run build`, and `npm run shots` for screenshots.
 
-### 2. Running the Backend (Spring Boot)
-Open a terminal in the root directory and run:
+API docs: http://localhost:8080/swagger-ui.html while `SWAGGER_ENABLED` is not `false`.
 
-**Using Maven Wrapper (Windows):**
-```cmd
-mvnw.cmd spring-boot:run
-```
+## Deploying
 
-**Using Maven Wrapper (Mac/Linux):**
+The Docker image contains one Spring Boot jar that serves both the API (`/api/**`) and the built React app, so the site and API share an origin and need no CORS setup. Deep links such as `/job/3` return the app. The container runs as a non-root user, stores uploads in the `/app/uploads` volume, and reports health at `/actuator/health`.
+
+**1. Environment.** Copy `.env.example` to `.env` and fill it in. Required: `SPRING_DATASOURCE_PASSWORD` and `JWT_SECRET` (`openssl rand -base64 64`). Set `APP_BASE_URL` to the public URL (used in email links) and the `SPRING_MAIL_*` variables for an SMTP provider; with no mail credentials the app runs and sends nothing. Outside Docker Compose, also set `SPRING_DATASOURCE_URL` and `SPRING_DATASOURCE_USERNAME`. If the frontend is hosted on a separate origin, build it with `VITE_API_URL=https://api.example.com/api` and list its origin in `APP_CORS_ALLOWED_ORIGINS`.
+
+**2. Build and run.**
+
 ```bash
-./mvnw spring-boot:run
-```
-*The backend server will start on `http://localhost:8080`*
-
-### 3. Running the Frontend (React/Vite)
-Open a new terminal and navigate to the frontend directory:
-```cmd
-cd src/main/frontend
+docker compose up --build -d        # app on http://localhost:8080 plus Postgres 16
 ```
 
-Install dependencies:
-```cmd
-npm install
-```
+Or build only the image (`docker build -t jobportal .`) and run it against any PostgreSQL with the same environment variables. Flyway migrates the database on startup.
 
-Start the development server:
-```cmd
-npm run dev
-```
-*The frontend application will run on `http://localhost:5173`*
+**3. First admin.** Register a normal account through the site, set `APP_ADMIN_EMAIL` to that email, and restart the app. The account is promoted to admin at startup. Registration never creates admins, and there is no endpoint for promoting more; change `APP_ADMIN_EMAIL` and restart to seed another.
 
----
+Swagger is off in the compose file (`SWAGGER_ENABLED=false`). Put a TLS-terminating proxy in front of port 8080.
 
-## 📚 API Documentation
-Once the backend is running, you can access the interactive Swagger API documentation at:
-**`http://localhost:8080/swagger-ui/index.html`**
+## License
 
-## 🤝 Contributing
-Contributions, issues, and feature requests are welcome! 
-
-## 📝 License
-This project is open-source and available under the MIT License.
+MIT

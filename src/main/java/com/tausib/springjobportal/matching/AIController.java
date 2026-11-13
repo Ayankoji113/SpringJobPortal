@@ -5,7 +5,6 @@ import com.tausib.springjobportal.job.JobService;
 
 import com.tausib.springjobportal.user.UserPrincipal;
 
-import com.tausib.springjobportal.application.JobApplicationService;
 import com.tausib.springjobportal.matching.dto.SalaryEstimateResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -24,7 +22,6 @@ public class AIController {
     private final AIService aiService;
     private final SalaryEstimateService salaryEstimateService;
     private final JobService jobService;
-    private final JobApplicationService applicationService;
 
     @GetMapping("/match-score/{jobId}")
     @PreAuthorize("hasRole('JOB_SEEKER')")
@@ -54,31 +51,5 @@ public class AIController {
     ) {
         List<JobPost> allJobs = jobService.getAllEntities();
         return ResponseEntity.ok(aiService.getRecommendedJobs(user.getId(), allJobs, threshold));
-    }
-
-    @PostMapping("/auto-apply")
-    @PreAuthorize("hasRole('JOB_SEEKER')")
-    public ResponseEntity<?> autoApply(
-            @AuthenticationPrincipal UserPrincipal user,
-            @RequestParam(defaultValue = "70") double threshold
-    ) {
-        List<JobPost> allJobs = jobService.getAllEntities();
-        List<MatchScore> matches = aiService.getRecommendedJobs(user.getId(), allJobs, threshold);
-
-        int applied = 0;
-        for (MatchScore match : matches) {
-            try {
-                applicationService.applyToJob(match.getJobPost().getPostId(), user.getId(), null);
-                applied++;
-            } catch (Exception e) {
-                // Skip jobs already applied to or other errors
-            }
-        }
-
-        return ResponseEntity.ok(Map.of(
-                "matchesFound", matches.size(),
-                "applicationsSubmitted", applied,
-                "threshold", threshold
-        ));
     }
 }

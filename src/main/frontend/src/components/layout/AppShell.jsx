@@ -1,22 +1,37 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Bell, LogOut, Menu, X } from 'lucide-react';
+import {
+  Bell, Bookmark, FileText, Inbox, LayoutDashboard, LogOut, Search, ShieldCheck, SquarePen, User,
+} from 'lucide-react';
 import { AuthContext } from '../../context/auth-context';
 import * as notificationService from '../../services/notificationService';
-import { Badge, Button, IconButton } from '../ui';
+import { Button, IconButton } from '../ui';
+import { Proofs } from '../ui/kit';
 import { useToast } from '../ui/toast-context';
 import './shell.css';
 
-function NavItem({ to, children, onNavigate }) {
+/** One list drives both the desktop bar and the phone tab bar, so they cannot drift apart. */
+function navFor({ isJobSeeker, isEmployer, isAdmin, isAuthenticated }) {
+  return [
+    { to: '/jobs', label: 'Jobs', icon: Search },
+    isJobSeeker && { to: '/my-applications', label: 'Applications', icon: FileText },
+    isJobSeeker && { to: '/saved-jobs', label: 'Saved', icon: Bookmark },
+    isEmployer && { to: '/employer-dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    isEmployer && { to: '/manage-applications', label: 'Candidates', icon: Inbox },
+    isEmployer && { to: '/post-job', label: 'Post a job', icon: SquarePen },
+    isAdmin && { to: '/admin', label: 'Review', icon: ShieldCheck },
+    isAuthenticated && { to: '/profile', label: 'Profile', icon: User },
+  ].filter(Boolean);
+}
+
+/** The mark is the product in miniature: a response clock, part spent. */
+function Wordmark() {
   return (
-    <NavLink
-      to={to}
-      onClick={onNavigate}
-      className={({ isActive }) => (isActive ? 'jp-nav__link jp-nav__link--active' : 'jp-nav__link')}
-    >
-      {children}
-    </NavLink>
+    <Link to="/" className="jp-wordmark" aria-label="JobPortal, home">
+      <span className="jp-wordmark__mark" aria-hidden="true"><i /><i /><i /><i /><i /></span>
+      JobPortal
+    </Link>
   );
 }
 
@@ -38,11 +53,13 @@ function UnreadBell() {
 }
 
 export function AppShell({ children }) {
-  const { user, isAuthenticated, isEmployer, isJobSeeker, logout } = useContext(AuthContext);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const auth = useContext(AuthContext);
+  const { user, isAuthenticated, logout } = auth;
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const items = navFor(auth);
+  const roleLabel = auth.isAdmin ? 'Admin' : auth.isEmployer ? 'Employer' : 'Job seeker';
 
   /* A dead session is announced, not enacted behind the user's back — and it
      remembers where they were so signing back in returns them there. */
@@ -56,32 +73,30 @@ export function AppShell({ children }) {
     return () => window.removeEventListener('jp:session-expired', onExpired);
   }, [logout, navigate, toast, location.pathname]);
 
-  const close = () => setMenuOpen(false);
-
   return (
-    <div className="jp-shell">
+    <div className={isAuthenticated ? 'jp-shell jp-shell--tabbed' : 'jp-shell'}>
       <a className="jp-skip-link" href="#main">Skip to content</a>
 
       <header className="jp-header">
         <div className="jp-container jp-header__inner">
-          <Link to="/" className="jp-wordmark">JobPortal</Link>
+          <Wordmark />
 
-          <nav className={menuOpen ? 'jp-nav jp-nav--open' : 'jp-nav'} aria-label="Main">
-            <NavItem to="/jobs" onNavigate={close}>Jobs</NavItem>
-            {isJobSeeker && <NavItem to="/my-applications" onNavigate={close}>Applications</NavItem>}
-            {isJobSeeker && <NavItem to="/saved-jobs" onNavigate={close}>Saved</NavItem>}
-            {isEmployer && <NavItem to="/employer-dashboard" onNavigate={close}>Dashboard</NavItem>}
-            {isEmployer && <NavItem to="/post-job" onNavigate={close}>Post a job</NavItem>}
-            {isAuthenticated && <NavItem to="/profile" onNavigate={close}>Profile</NavItem>}
+          <nav className="jp-nav" aria-label="Main">
+            {items.map(({ to, label }) => (
+              <NavLink key={to} to={to}
+                className={({ isActive }) => (isActive ? 'jp-nav__link jp-nav__link--active' : 'jp-nav__link')}>
+                {label}
+              </NavLink>
+            ))}
           </nav>
 
           <div className="jp-header__actions">
             {isAuthenticated ? (
               <>
                 <UnreadBell />
-                <span className="jp-header__who jp-sm">
-                  {user?.fullName}
-                  <Badge tone="neutral">{isEmployer ? 'Employer' : 'Job seeker'}</Badge>
+                <span className="jp-header__who">
+                  <span className="jp-header__name">{user?.fullName}</span>
+                  <span className="jp-header__role">{roleLabel}</span>
                 </span>
                 <IconButton label="Sign out" onClick={() => { logout(); navigate('/'); }}>
                   <LogOut size={16} aria-hidden="true" />
@@ -93,26 +108,36 @@ export function AppShell({ children }) {
                 <Button variant="primary" size="sm" onClick={() => navigate('/register')}>Create account</Button>
               </>
             )}
-            <IconButton
-              label={menuOpen ? 'Close menu' : 'Open menu'}
-              className="jp-header__toggle"
-              aria-expanded={menuOpen}
-              onClick={() => setMenuOpen((v) => !v)}
-            >
-              {menuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
-            </IconButton>
           </div>
         </div>
       </header>
 
       <main id="main" className="jp-main">{children}</main>
 
-      <footer className="jp-footer">
-        <div className="jp-container jp-footer__inner jp-sm jp-muted">
-          <span>JobPortal</span>
-          <span>Built with Spring Boot and React</span>
+      <footer className="jp-footer jp-on-band">
+        <div className="jp-container jp-footer__inner">
+          <div>
+            <Wordmark />
+            <p className="jp-sm jp-muted jp-footer__line">
+              A job board that holds employers to an answer.
+            </p>
+          </div>
+          <Proofs verified salaryShown responsiveness={{ responseRatePercent: null }} className="jp-footer__proofs" />
         </div>
       </footer>
+
+      {/* Phones get the same destinations within thumb reach instead of a hidden menu. */}
+      {isAuthenticated && (
+        <nav className="jp-tabbar" aria-label="Main, mobile">
+          {items.slice(0, 5).map(({ to, label, icon }) => (
+            <NavLink key={to} to={to}
+              className={({ isActive }) => (isActive ? 'jp-tabbar__tab jp-tabbar__tab--active' : 'jp-tabbar__tab')}>
+              {React.createElement(icon, { size: 19, 'aria-hidden': true })}
+              <span>{label}</span>
+            </NavLink>
+          ))}
+        </nav>
+      )}
     </div>
   );
 }

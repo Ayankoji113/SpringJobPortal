@@ -9,8 +9,9 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Create/update payload. Moderation flags ({@code isFeatured}, {@code isApproved}) are deliberately
- * absent — an employer must not be able to feature or approve their own posting.
+ * Create/update payload. Moderation state ({@code isFeatured}, {@code status}) is deliberately
+ * absent — an employer must not be able to feature or approve their own posting. It is set by
+ * {@code admin/} alone.
  */
 @Data
 public class JobRequest {

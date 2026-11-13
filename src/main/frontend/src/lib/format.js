@@ -58,15 +58,24 @@ export const JOB_TYPES = [
 
 export const jobTypeLabel = (value) => JOB_TYPES.find(([v]) => v === value)?.[1] || value || '';
 
-export const APPLICATION_STATUSES = ['PENDING', 'REVIEWED', 'ACCEPTED', 'REJECTED'];
-
 export function statusTone(status) {
   switch (status) {
-    case 'ACCEPTED': return 'success';
-    case 'REJECTED': return 'danger';
-    case 'REVIEWED': return 'accent';
+    case 'ACCEPTED':
+    case 'OFFERED': return 'success';
+    case 'REJECTED':
+    case 'NO_RESPONSE': return 'danger';
+    case 'REVIEWED':
+    case 'INTERVIEW': return 'accent';
+    case 'WITHDRAWN': return 'neutral';
     default: return 'warning';
   }
 }
 
-export const titleCase = (s) => (s ? s.charAt(0) + s.slice(1).toLowerCase() : '');
+/** NO_RESPONSE reads as "No response". */
+export const titleCase = (s) =>
+  (s ? s.charAt(0) + s.slice(1).toLowerCase().replaceAll('_', ' ') : '');
+
+/** Whole days from now until a date; negative once it has passed. */
+export function daysUntil(value) {
+  return Math.ceil((new Date(value).getTime() - Date.now()) / 86400000);
+}

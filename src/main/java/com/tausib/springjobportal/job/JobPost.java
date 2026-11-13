@@ -24,7 +24,9 @@ import java.util.List;
 @Table(name = "job_post", indexes = {
         // Covers the salary-comparables filter in JobRepo.salaryComparables.
         @Index(name = "idx_job_post_comparables", columnList = "is_active, location, req_experience"),
-        @Index(name = "idx_job_post_posted_date", columnList = "posted_date")
+        @Index(name = "idx_job_post_posted_date", columnList = "posted_date"),
+        // Every public listing filters on this pair.
+        @Index(name = "idx_job_post_status_active", columnList = "status, is_active")
 })
 public class JobPost {
 
@@ -67,8 +69,24 @@ public class JobPost {
     @Builder.Default
     private Boolean isFeatured = false;
 
+    /**
+     * Moderation state. Defaults to {@link JobStatus#PENDING_REVIEW}: a posting is not public until
+     * something says so, rather than public until something objects.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 32)
     @Builder.Default
-    private Boolean isApproved = true;
+    private JobStatus status = JobStatus.PENDING_REVIEW;
+
+    /** Why the posting was rejected or suspended. Shown to the employer. */
+    @Column(columnDefinition = "TEXT")
+    private String moderationReason;
+
+    private LocalDateTime reviewedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reviewed_by_id")
+    private User reviewedBy;
 
     @Builder.Default
     private Integer viewCount = 0;

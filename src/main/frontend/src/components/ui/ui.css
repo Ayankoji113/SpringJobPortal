@@ -145,11 +145,8 @@
   display: inline-flex;
   align-items: center;
   gap: var(--jp-space-1);
-  font-family: var(--jp-font-mono);
   font-size: var(--jp-fs-label);
-  letter-spacing: var(--jp-ls-label);
-  text-transform: uppercase;
-  font-weight: var(--jp-fw-medium);
+  font-weight: var(--jp-fw-semibold);
   padding: 2px var(--jp-space-2);
   border-radius: var(--jp-radius-pill);
   border: var(--jp-border-width) solid transparent;
@@ -267,9 +264,10 @@
 }
 
 /* Drawer variant: same primitive, anchored bottom on small screens. */
+/* Same layer as the scrim it is painted after; a lower one put the drawer under its own overlay. */
 .jp-drawer {
   position: fixed;
-  z-index: var(--jp-z-drawer);
+  z-index: var(--jp-z-modal);
   left: 0;
   right: 0;
   bottom: 0;

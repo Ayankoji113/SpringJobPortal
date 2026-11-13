@@ -1,0 +1,249 @@
+/* Seeker pages: applications, saved jobs, recommendations. Tokens only. */
+
+/* ============================================================ applications */
+.jp-apps__summary { margin-bottom: var(--jp-space-7); }
+
+.jp-apps__summary--skeleton {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--jp-space-5);
+  padding-block: var(--jp-space-4);
+  border-block: var(--jp-border);
+}
+
+.jp-apps__section + .jp-apps__section { margin-top: var(--jp-space-7); }
+
+.jp-apps__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--jp-space-1) var(--jp-space-4);
+  margin-bottom: var(--jp-space-3);
+}
+.jp-apps__head .jp-h2 { display: inline-flex; align-items: baseline; gap: var(--jp-space-2); }
+.jp-apps__count {
+  font-family: var(--jp-font-mono);
+  font-size: var(--jp-fs-data);
+  font-weight: var(--jp-fw-medium);
+  color: var(--jp-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.jp-apps__list { list-style: none; }
+
+/* One application, read left to right: who, where it stands, the clock, what you can do.
+   The history opens underneath across the full width so a note has room. */
+.jp-app {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) minmax(240px, 300px) 230px 92px;
+  grid-template-areas:
+    "mono main track answer actions"
+    ".    hist hist  hist   hist";
+  gap: 0 var(--jp-space-5);
+  align-items: start;
+  padding: var(--jp-space-4) var(--jp-space-5) var(--jp-space-3);
+  border-bottom: var(--jp-border);
+}
+.jp-app:last-child { border-bottom: 0; }
+
+.jp-app > :first-child { grid-area: mono; }
+.jp-app__main { grid-area: main; min-width: 0; }
+.jp-app__track { grid-area: track; padding-top: var(--jp-space-2); min-width: 0; }
+.jp-app__answer { grid-area: answer; display: grid; gap: var(--jp-space-1); align-content: start; padding-top: var(--jp-space-1); }
+.jp-app__actions { grid-area: actions; display: flex; justify-content: flex-end; }
+.jp-app__history { grid-area: hist; min-width: 0; }
+
+.jp-app__title a { color: var(--jp-ink); }
+.jp-app__title a:hover { color: var(--jp-accent); }
+.jp-app__company {
+  font-size: var(--jp-fs-sm);
+  line-height: var(--jp-lh-sm);
+  font-weight: var(--jp-fw-medium);
+  color: var(--jp-ink-secondary);
+}
+.jp-app__facts { margin-top: var(--jp-space-1); }
+
+/* Closed applications recede: the decisions are made, the clock is history. */
+.jp-apps__list--closed .jp-app__title a { color: var(--jp-ink-secondary); }
+.jp-apps__list--closed .jp-app__title a:hover { color: var(--jp-accent); }
+
+.jp-apps__empty {
+  display: grid;
+  gap: var(--jp-space-3);
+  justify-items: start;
+  padding: var(--jp-space-7) var(--jp-space-6);
+  background: var(--jp-surface);
+  border: var(--jp-border);
+  border-radius: var(--jp-radius-lg);
+}
+.jp-apps__empty p { max-width: 56ch; }
+
+/* An ended track has no reached stage to show (the list payload does not carry it), so its
+   untouched labels are noise: keep the dots, the start and the ending. */
+.jp-apps .jp-track--ended .jp-track__step:not(.jp-track__step--current) .jp-track__label { visibility: hidden; }
+
+@media (max-width: 1100px) {
+  .jp-app {
+    grid-template-columns: 40px minmax(0, 1.4fr) minmax(0, 1fr) auto;
+    grid-template-areas:
+      "mono main  main   actions"
+      ".    track answer answer"
+      ".    hist  hist   hist";
+    gap: var(--jp-space-2) var(--jp-space-5);
+  }
+  .jp-app__main { padding-bottom: var(--jp-space-2); }
+  .jp-app__track { padding-top: var(--jp-space-1); }
+}
+
+@media (max-width: 640px) {
+  .jp-apps__summary { margin-bottom: var(--jp-space-6); }
+  .jp-apps__summary--skeleton { grid-template-columns: 1fr 1fr; }
+  .jp-apps__section + .jp-apps__section { margin-top: var(--jp-space-6); }
+  .jp-app {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "mono   main   main"
+      "track  track  track"
+      "answer answer answer"
+      "hist   hist   actions";
+    padding: var(--jp-space-4) var(--jp-gutter-sm) var(--jp-space-2);
+    gap: var(--jp-space-2) var(--jp-space-3);
+  }
+  .jp-app__main { padding-bottom: var(--jp-space-1); }
+  .jp-app__track { padding-top: 0; }
+  .jp-app__answer { padding-top: var(--jp-space-1); }
+  .jp-app__actions { align-self: start; padding-top: var(--jp-space-1); }
+  .jp-app__actions .jp-btn { height: 40px; }
+  /* Room for the open history to use the whole row on a phone. */
+  .jp-app:has(.jp-history[open]) { grid-template-areas: "mono main main" "track track track" "answer answer answer" "actions actions actions" "hist hist hist"; }
+  .jp-app:has(.jp-history[open]) .jp-app__actions { justify-content: flex-start; }
+}
+
+/* ======================================================== recommendations */
+.jp-recs__list { list-style: none; }
+
+.jp-match { position: relative; border-bottom: var(--jp-border); }
+.jp-match:last-child { border-bottom: 0; }
+.jp-match .jp-jobrow { border-bottom: 0; padding-bottom: var(--jp-space-2); }
+/* The skills appear below, split into have and missing, so the plain tag list would repeat them. */
+.jp-match .jp-jobrow__tags { display: none; }
+
+/* Selected rows are said three ways: the tinted row, the edge rule, the control's own label. */
+.jp-match--picked { background: var(--jp-accent-wash); }
+.jp-match--picked::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--jp-accent);
+}
+.jp-match--picked .jp-jobrow:hover { background: transparent; }
+
+.jp-match__why {
+  display: flex;
+  gap: var(--jp-space-5);
+  align-items: flex-start;
+  padding: 0 var(--jp-space-5) var(--jp-space-4) calc(var(--jp-space-5) + 40px + var(--jp-space-4));
+}
+
+.jp-match__score {
+  flex: none;
+  display: grid;
+  min-width: 64px;
+  font-size: var(--jp-fs-label);
+  color: var(--jp-ink-muted);
+  line-height: 1.2;
+}
+.jp-match__score strong {
+  font-family: var(--jp-font-display);
+  font-stretch: var(--jp-display-stretch);
+  font-size: var(--jp-fs-h1);
+  font-weight: var(--jp-fw-bold);
+  letter-spacing: var(--jp-ls-h1);
+  color: var(--jp-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.jp-match__skills { min-width: 0; display: grid; gap: var(--jp-space-2); }
+.jp-match__reason { color: var(--jp-ink-secondary); }
+
+.jp-match__chips { list-style: none; display: flex; flex-wrap: wrap; gap: var(--jp-space-1); }
+.jp-skill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jp-space-1);
+  font-size: var(--jp-fs-label);
+  line-height: var(--jp-lh-label);
+  padding: 2px var(--jp-space-2);
+  border-radius: var(--jp-radius-xs);
+  border: var(--jp-border-width) solid transparent;
+  white-space: nowrap;
+}
+.jp-skill--have { background: var(--jp-success-wash); border-color: var(--jp-success-border); color: var(--jp-success); }
+.jp-skill--missing { background: transparent; border: var(--jp-border-width) dashed var(--jp-line-strong); color: var(--jp-ink-muted); }
+
+/* The select control: a real checkbox inside a button-sized target. */
+.jp-pickbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jp-space-2);
+  height: 36px;
+  min-width: 104px;
+  padding: 0 var(--jp-space-3);
+  border: var(--jp-border-width) solid var(--jp-line-strong);
+  border-radius: var(--jp-radius-md);
+  background: var(--jp-surface);
+  font-size: var(--jp-fs-sm);
+  font-weight: var(--jp-fw-medium);
+  cursor: pointer;
+  transition: background-color var(--jp-duration) var(--jp-ease), border-color var(--jp-duration) var(--jp-ease);
+}
+.jp-pickbox:hover { background: var(--jp-surface-hover); }
+.jp-pickbox input { width: 16px; height: 16px; margin: 0; accent-color: var(--jp-accent); cursor: inherit; }
+.jp-pickbox:has(input:focus-visible) { outline: var(--jp-focus-width) solid var(--jp-focus-color); outline-offset: var(--jp-focus-offset); }
+.jp-pickbox--on { background: var(--jp-accent); border-color: var(--jp-accent); color: var(--jp-accent-ink); }
+.jp-pickbox--on:hover { background: var(--jp-accent-hover); }
+.jp-pickbox--on input { accent-color: var(--jp-accent-active); }
+.jp-pickbox:has(input:disabled) { cursor: not-allowed; color: var(--jp-ink-disabled); background: var(--jp-n-100); border-color: var(--jp-line); }
+
+/* Stays in reach while the list scrolls: what is selected and the one action. */
+.jp-pickbar {
+  position: sticky;
+  bottom: var(--jp-space-4);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--jp-space-3);
+  margin-top: var(--jp-space-5);
+  padding: var(--jp-space-3) var(--jp-space-3) var(--jp-space-3) var(--jp-space-5);
+  background: var(--jp-surface);
+  border: var(--jp-border-strong);
+  border-radius: var(--jp-radius-lg);
+  transition: border-color var(--jp-duration) var(--jp-ease);
+}
+.jp-pickbar--active { border-color: var(--jp-accent); }
+.jp-pickbar p { display: flex; align-items: center; gap: var(--jp-space-3); font-weight: var(--jp-fw-medium); }
+.jp-pickbar__dots { display: inline-flex; gap: 3px; }
+.jp-pickbar__dots i { width: 8px; height: 8px; border-radius: 2px; background: var(--jp-n-200); }
+.jp-pickbar__dots i.on { background: var(--jp-accent); }
+
+@media (max-width: 720px) {
+  /* Clear of the fixed bottom tab bar. */
+  .jp-pickbar {
+    bottom: calc(var(--jp-tabbar-height) + env(safe-area-inset-bottom) + var(--jp-space-2));
+    flex-wrap: nowrap;
+    gap: var(--jp-space-2);
+    padding: var(--jp-space-2) var(--jp-space-2) var(--jp-space-2) var(--jp-space-3);
+  }
+  .jp-pickbar p { flex: 1; min-width: 0; font-size: var(--jp-fs-label); line-height: var(--jp-lh-label); }
+  .jp-pickbar__dots { display: none; }
+  .jp-pickbar .jp-row-actions { flex: none; flex-wrap: nowrap; gap: var(--jp-space-1); }
+  .jp-pickbar .jp-btn { height: 42px; padding-inline: var(--jp-space-3); }
+}
+
+@media (max-width: 640px) {
+  .jp-match__why { padding: 0 var(--jp-gutter-sm) var(--jp-space-4); gap: var(--jp-space-3); }
+  .jp-pickbox { height: 40px; }
+}
