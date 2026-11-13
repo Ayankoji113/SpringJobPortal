@@ -1,0 +1,133 @@
+/* Market range: two labelled rows on one shared scale (the market's P25 to P75
+   band with its median, and this job's own range), then the figures in words. */
+.jp-salary {
+  display: grid;
+  gap: var(--jp-space-2);
+  padding-top: var(--jp-space-5);
+  border-top: var(--jp-border);
+}
+
+.jp-salary__facts { gap: var(--jp-space-1) var(--jp-space-4); }
+
+.jp-salary__note { max-width: 52ch; }
+
+.jp-salary__chart {
+  margin: var(--jp-space-4) 0 0;
+  display: grid;
+  gap: var(--jp-space-4);
+}
+
+.jp-salary__row {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--jp-space-3);
+}
+.jp-salary__row + .jp-salary__row { margin-top: var(--jp-space-3); }
+
+.jp-salary__rowlabel {
+  font-size: var(--jp-fs-label);
+  font-weight: var(--jp-fw-semibold);
+  color: var(--jp-ink-secondary);
+}
+
+.jp-salary__track {
+  position: relative;
+  height: 14px;
+  border-radius: var(--jp-radius-xs);
+  background: var(--jp-n-100);
+}
+/* The market row needs headroom for its P25 / Median / P75 labels. */
+.jp-salary__row:first-child { padding-top: var(--jp-space-5); }
+
+.jp-salary__band {
+  position: absolute;
+  inset-block: 0;
+  background: var(--jp-n-300);
+  border-radius: var(--jp-radius-xs);
+}
+
+.jp-salary__mark {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--jp-n-600);
+}
+/* The median is the reference line: taller and in ink, not just a different colour. */
+.jp-salary__mark--median { top: -6px; bottom: -6px; width: 3px; margin-left: -1.5px; background: var(--jp-ink); }
+
+.jp-salary__marklabel {
+  position: absolute;
+  bottom: calc(100% + var(--jp-space-1));
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: var(--jp-fs-label);
+  line-height: 1;
+  color: var(--jp-ink-muted);
+}
+.jp-salary__mark--median .jp-salary__marklabel { color: var(--jp-ink); font-weight: var(--jp-fw-semibold); }
+
+.jp-salary__track--own { background: transparent; border-block: 1px dashed var(--jp-line); border-radius: 0; height: 12px; }
+
+.jp-salary__own {
+  position: absolute;
+  inset-block: 1px;
+  background: var(--jp-accent);
+  border-radius: var(--jp-radius-xs);
+}
+.jp-salary__own--point { width: 10px; margin-left: -5px; border-radius: var(--jp-radius-pill); }
+
+/* --------------------------------------------------------------- figures */
+.jp-salary__figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  border-block: var(--jp-border);
+}
+.jp-salary__fig { padding: var(--jp-space-2) var(--jp-space-2) var(--jp-space-2) 0; }
+.jp-salary__fig + .jp-salary__fig { padding-left: var(--jp-space-3); border-left: var(--jp-border); }
+.jp-salary__fig dt { font-size: var(--jp-fs-label); color: var(--jp-ink-muted); }
+.jp-salary__fig dd { margin: 0; font-size: var(--jp-fs-sm); color: var(--jp-ink-secondary); }
+.jp-salary__fig--median dt { color: var(--jp-ink); font-weight: var(--jp-fw-semibold); }
+.jp-salary__fig--median dd { color: var(--jp-ink); font-weight: var(--jp-fw-semibold); }
+
+.jp-salary__verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--jp-space-2);
+  margin-top: var(--jp-space-3);
+  font-size: var(--jp-fs-sm);
+}
+.jp-salary__verdict strong { font-weight: var(--jp-fw-semibold); }
+.jp-salary__verdict .jp-data { font-weight: var(--jp-fw-semibold); }
+.jp-salary__key {
+  flex: none;
+  width: 14px;
+  height: 10px;
+  margin-top: 5px;
+  border-radius: var(--jp-radius-xs);
+  background: var(--jp-accent);
+}
+.jp-salary__position { display: block; color: var(--jp-ink-secondary); }
+
+/* ------------------------------------------------------------- narrative */
+.jp-salary__narrative {
+  display: grid;
+  gap: var(--jp-space-3);
+  margin: var(--jp-space-3) 0 0;
+}
+.jp-salary__narrative dt {
+  font-size: var(--jp-fs-sm);
+  font-weight: var(--jp-fw-semibold);
+  color: var(--jp-ink);
+}
+.jp-salary__narrative dd {
+  margin: var(--jp-space-1) 0 0;
+  font-size: var(--jp-fs-sm);
+  line-height: var(--jp-lh-body);
+  color: var(--jp-ink-secondary);
+  max-width: 68ch;
+}

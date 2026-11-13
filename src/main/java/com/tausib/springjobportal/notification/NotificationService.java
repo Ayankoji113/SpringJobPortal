@@ -1,0 +1,60 @@
+package com.tausib.springjobportal.notification;
+
+import com.tausib.springjobportal.common.exception.ResourceNotFoundException;
+import com.tausib.springjobportal.user.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class NotificationService {
+
+    private final NotificationRepo notificationRepo;
+
+    public Notification createNotification(User user, String title, String message,
+                                           NotificationType type, String actionUrl) {
+        Notification notification = Notification.builder()
+                .user(user)
+                .title(title)
+                .message(message)
+                .type(type)
+                .actionUrl(actionUrl)
+                .isRead(false)
+                .build();
+        return notificationRepo.save(notification);
+    }
+
+    public List<Notification> getUserNotifications(Integer userId) {
+        return notificationRepo.findByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    public List<Notification> getUnreadNotifications(Integer userId) {
+        return notificationRepo.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
+    }
+
+    public long getUnreadCount(Integer userId) {
+        return notificationRepo.countByUserIdAndIsReadFalse(userId);
+    }
+
+    public Notification markAsRead(Integer notificationId, Integer userId) {
+        Notification notification = notificationRepo.findByIdAndUserId(notificationId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Notification not found with id: " + notificationId));
+        notification.setIsRead(true);
+        return notificationRepo.save(notification);
+    }
+
+    public void markAllAsRead(Integer userId) {
+        List<Notification> unread = notificationRepo.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
+        unread.forEach(n -> n.setIsRead(true));
+        notificationRepo.saveAll(unread);
+    }
+
+    public void deleteNotification(Integer id, Integer userId) {
+        notificationRepo.delete(notificationRepo.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Notification not found with id: " + id)));
+    }
+}

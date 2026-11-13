@@ -1,0 +1,57 @@
+package com.tausib.springjobportal.application;
+
+import com.tausib.springjobportal.job.JobPost;
+
+import com.tausib.springjobportal.user.User;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "job_applications")
+public class JobApplication {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "job_post_id", nullable = false)
+    private JobPost jobPost;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "applicant_id", nullable = false)
+    @JsonIgnoreProperties({"password", "authorities"})
+    private User applicant;
+
+    @Column(columnDefinition = "TEXT")
+    private String coverLetter;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private ApplicationStatus status = ApplicationStatus.PENDING;
+
+    @CreationTimestamp
+    private LocalDateTime appliedDate;
+
+    /** When the employer must have acted by. Null only on rows decided before deadlines existed. */
+    private LocalDateTime respondBy;
+
+    /** The first time the employer (or a closed posting) answered. Never overwritten. */
+    private LocalDateTime respondedAt;
+
+    /** Set once the employer has been warned the deadline is close, so they are warned once. */
+    private LocalDateTime reminderSentAt;
+}

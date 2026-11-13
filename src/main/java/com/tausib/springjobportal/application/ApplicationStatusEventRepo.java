@@ -1,0 +1,10 @@
+package com.tausib.springjobportal.application;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface ApplicationStatusEventRepo extends JpaRepository<ApplicationStatusEvent, Integer> {
+
+    List<ApplicationStatusEvent> findByApplicationIdOrderByCreatedAtAscIdAsc(Integer applicationId);
+}

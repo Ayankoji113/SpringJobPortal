@@ -1,0 +1,193 @@
+.jp-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ------------------------------------------------------------------ header
+   One hairline, no shadow. Slightly translucent so content scrolls under it. */
+.jp-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--jp-z-header);
+  background: color-mix(in srgb, var(--jp-surface) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: var(--jp-border);
+}
+
+.jp-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--jp-space-6);
+  height: var(--jp-header-height);
+}
+
+.jp-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jp-space-2);
+  font-family: var(--jp-font-display);
+  font-stretch: var(--jp-display-stretch);
+  font-weight: 800;
+  font-size: 1.0625rem;
+  letter-spacing: -0.02em;
+  color: var(--jp-ink);
+  text-decoration: none;
+}
+.jp-wordmark:hover { text-decoration: none; color: var(--jp-ink); }
+
+/* Five ticks, three spent. */
+.jp-wordmark__mark { display: inline-flex; gap: 2px; align-items: flex-end; }
+.jp-wordmark__mark i {
+  width: 3px;
+  height: 15px;
+  border-radius: 1px;
+  background: var(--jp-n-300);
+}
+.jp-wordmark__mark i:nth-child(-n + 3) { background: var(--jp-signal); }
+.jp-wordmark:hover .jp-wordmark__mark i { background: var(--jp-signal); transition: background var(--jp-duration) var(--jp-ease); }
+.jp-wordmark:hover .jp-wordmark__mark i:nth-child(4) { transition-delay: 60ms; }
+.jp-wordmark:hover .jp-wordmark__mark i:nth-child(5) { transition-delay: 120ms; }
+.jp-on-band .jp-wordmark { color: var(--jp-band-ink); }
+.jp-on-band .jp-wordmark__mark i { background: var(--jp-band-line); }
+.jp-on-band .jp-wordmark__mark i:nth-child(-n + 3) { background: var(--jp-signal); }
+
+.jp-nav {
+  display: flex;
+  align-items: stretch;
+  gap: var(--jp-space-1);
+  margin-right: auto;
+  height: 100%;
+}
+
+.jp-nav__link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--jp-space-3);
+  font-size: var(--jp-fs-sm);
+  font-weight: var(--jp-fw-medium);
+  color: var(--jp-ink-muted);
+  text-decoration: none;
+  transition: color var(--jp-duration) var(--jp-ease);
+}
+.jp-nav__link:hover { color: var(--jp-ink); text-decoration: none; }
+
+/* Active state is a bar that sits on the header's own hairline. */
+.jp-nav__link::after {
+  content: "";
+  position: absolute;
+  left: var(--jp-space-3);
+  right: var(--jp-space-3);
+  bottom: -1px;
+  height: 2px;
+  background: var(--jp-accent);
+  transform: scaleX(0);
+  transition: transform var(--jp-duration) var(--jp-ease-out);
+}
+.jp-nav__link--active { color: var(--jp-ink); }
+.jp-nav__link--active::after { transform: scaleX(1); }
+
+.jp-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--jp-space-2);
+  margin-left: auto;
+}
+
+.jp-header__who {
+  display: grid;
+  justify-items: end;
+  line-height: 1.25;
+  padding: 0 var(--jp-space-2);
+}
+.jp-header__name { font-size: var(--jp-fs-sm); font-weight: var(--jp-fw-medium); color: var(--jp-ink); }
+.jp-header__role { font-size: var(--jp-fs-label); color: var(--jp-ink-muted); }
+
+.jp-bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--jp-radius-md);
+  color: var(--jp-ink-muted);
+}
+.jp-bell:hover { background: var(--jp-surface-hover); color: var(--jp-ink); text-decoration: none; }
+
+/* Unread is a time-sensitive thing, so it takes the signal colour. */
+.jp-bell__dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--jp-radius-pill);
+  background: var(--jp-signal);
+  border: 2px solid var(--jp-surface);
+}
+
+.jp-main { flex: 1; }
+
+/* ------------------------------------------------------------------ footer */
+.jp-footer { margin-top: var(--jp-space-8); }
+
+.jp-footer__inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--jp-space-5);
+  padding-block: var(--jp-space-6);
+  flex-wrap: wrap;
+}
+.jp-footer__line { margin-top: var(--jp-space-2); }
+/* The footer states the first two promises; the third is per employer and lives on each posting. */
+.jp-footer__proofs .jp-proof:nth-child(3) { display: none; }
+
+/* ------------------------------------------------------------------ tabbar
+   Phones only. Fixed to the bottom edge, clear of the home indicator. */
+.jp-tabbar { display: none; }
+
+@media (max-width: 900px) {
+  .jp-header__who { display: none; }
+}
+
+@media (max-width: 720px) {
+  .jp-nav { display: none; }
+  .jp-header__inner { gap: var(--jp-space-3); }
+
+  .jp-tabbar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: var(--jp-z-header);
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    height: calc(var(--jp-tabbar-height) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--jp-surface);
+    border-top: var(--jp-border);
+  }
+
+  .jp-tabbar__tab {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 2px;
+    font-size: 0.6875rem;
+    font-weight: var(--jp-fw-medium);
+    color: var(--jp-ink-muted);
+    text-decoration: none;
+    min-width: 0;
+  }
+  .jp-tabbar__tab:hover { text-decoration: none; }
+  .jp-tabbar__tab span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .jp-tabbar__tab--active { color: var(--jp-accent); }
+  .jp-tabbar__tab--active svg { stroke-width: 2.4; }
+
+  /* Keep the last of the page clear of the fixed bar. */
+  .jp-shell--tabbed { padding-bottom: calc(var(--jp-tabbar-height) + env(safe-area-inset-bottom)); }
+  .jp-footer { margin-top: var(--jp-space-7); }
+}

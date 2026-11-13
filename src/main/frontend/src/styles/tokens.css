@@ -1,0 +1,210 @@
+/* ==========================================================================
+   JobPortal design tokens
+   --------------------------------------------------------------------------
+   The single source of truth for colour, type, space, radius and motion.
+
+   Rules:
+   - No hardcoded colour, spacing, font-size or radius anywhere else in the
+     codebase. If a value is needed and no token fits, add a token here first.
+   - Everything is prefixed --jp- so it cannot collide with the legacy
+     variables in index.css while pages are migrated stage by stage.
+   - Hierarchy comes from whitespace and type weight. There is exactly one
+     shadow token and it belongs to the modal, which is the only thing in the
+     system that genuinely floats.
+   ========================================================================== */
+
+:root {
+  /* ---------------------------------------------------------------- colour
+     Neutral scale. Warm — biased toward brown, not the blue-grey slate that
+     ships with every starter. Numbered by lightness like a type scale, so
+     n-50 is the page and n-950 is text. */
+  --jp-n-50:  #faf9f7;
+  --jp-n-100: #f4f2ee;
+  --jp-n-150: #edeae5;
+  --jp-n-200: #e4e0da;
+  --jp-n-300: #d5d0c8;
+  --jp-n-400: #b4ada3;
+  --jp-n-500: #8f8880;
+  --jp-n-600: #706a63;
+  --jp-n-700: #55504a;
+  --jp-n-800: #3a3630;
+  --jp-n-900: #262320;
+  --jp-n-950: #1a1815;
+
+  /* Accent. Deep teal — the only saturated colour in the interface, and it is
+     spent on exactly two things: primary actions and active state. It sits far
+     from green, amber and red so it never competes with a status pill.
+     6.2:1 on the page ground, so white text on it passes AA. */
+  --jp-accent-wash:   #e4f0ee;
+  --jp-accent-border: #b9d8d4;
+  --jp-accent:        #0f6e68;
+  --jp-accent-hover:  #0c5a55;
+  --jp-accent-active: #094744;
+  --jp-accent-ink:    #ffffff;
+
+  /* Semantic. Separate from the accent by design: an application row's status
+     must never be confused with something being clickable. */
+  --jp-success:       #1f7a45;
+  --jp-success-wash:  #e6f2ea;
+  --jp-success-border:#bcdcc8;
+  --jp-warning:       #9a5b12;
+  --jp-warning-wash:  #f7ede0;
+  --jp-warning-border:#e3cba6;
+  --jp-danger:        #a32c22;
+  --jp-danger-wash:   #f7e7e5;
+  --jp-danger-border: #e6bdb8;
+  --jp-danger-hover:  #8a251c;
+  --jp-danger-ink:    #ffffff;
+
+  /* Band. A deep green-black used for the few full-width dark surfaces: the
+     home hero, the sign-in panel, the footer. It is the accent taken almost to
+     black, so the dark surfaces and the teal read as one family. */
+  --jp-band:        #12211f;
+  --jp-band-raised: #1b2f2c;
+  --jp-band-line:   #2c423e;
+  --jp-band-ink:    #f4f2ee;
+  --jp-band-muted:  #a3b3ae;
+
+  /* Signal. Marigold, and it means one thing: time. It marks the response
+     clock and nothing else, so wherever it appears a deadline is in play. */
+  --jp-signal:      #e9a820;
+  --jp-signal-wash: #fbf1d6;
+  --jp-signal-ink:  #1a1815;
+
+  /* Semantic surface + text aliases. Components use these, not the raw scale,
+     so a future dark theme is a matter of redefining this block alone. */
+  --jp-ground:        var(--jp-n-50);
+  --jp-surface:       #ffffff;
+  --jp-surface-sunk:  var(--jp-n-100);
+  --jp-surface-hover: var(--jp-n-100);
+  --jp-ink:           var(--jp-n-950);
+  --jp-ink-secondary: var(--jp-n-700);
+  --jp-ink-muted:     var(--jp-n-600);
+  --jp-ink-disabled:  var(--jp-n-400);
+  --jp-ink-inverse:   var(--jp-n-50);
+
+  --jp-line:          var(--jp-n-200);  /* hairline dividers, input borders */
+  --jp-line-strong:   var(--jp-n-300);  /* section boundaries, hover borders */
+
+  /* ------------------------------------------------------------------ type
+     Archivo for headings: a grotesk with enough width to feel engineered
+     rather than friendly, tracked tight at display sizes.
+     IBM Plex Sans for body: an open aperture that survives at 13px in dense
+     table rows where a geometric sans turns to mush.
+     IBM Plex Mono for data: tabular figures so columns of money line up, and a
+     quiet signal that a number is data rather than prose. */
+  --jp-font-display: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --jp-font-body: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --jp-font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Size / line-height / tracking travel together — a heading is not just
+     bigger, it is tighter. */
+  /* Archivo is a variable font with a width axis. Headlines are set wide and
+     heavy, which is the one typographic gesture the product owns. */
+  --jp-display-stretch: 118%;
+  --jp-fs-hero: clamp(2.25rem, 5.4vw, 4.25rem);
+  --jp-fs-display: 2rem;      /* 32px */
+  --jp-lh-display: 1.15;
+  --jp-ls-display: -0.025em;
+
+  --jp-fs-h1: 1.5rem;         /* 24px */
+  --jp-lh-h1: 1.2;
+  --jp-ls-h1: -0.018em;
+
+  --jp-fs-h2: 1.1875rem;      /* 19px */
+  --jp-lh-h2: 1.3;
+  --jp-ls-h2: -0.012em;
+
+  --jp-fs-h3: 1rem;           /* 16px — a job title in a listing row */
+  --jp-lh-h3: 1.35;
+  --jp-ls-h3: -0.006em;
+
+  --jp-fs-body: 0.9375rem;    /* 15px */
+  --jp-lh-body: 1.6;
+  --jp-ls-body: 0;
+
+  --jp-fs-sm: 0.8125rem;      /* 13px — row metadata */
+  --jp-lh-sm: 1.5;
+
+  --jp-fs-label: 0.75rem;     /* 12px — small sentence-case labels */
+  --jp-lh-label: 1.4;
+  --jp-ls-label: 0;
+
+  --jp-fs-data: 0.8125rem;    /* 13px — salary, counts, dates */
+  --jp-lh-data: 1.4;
+
+  --jp-fw-regular: 400;
+  --jp-fw-medium: 500;
+  --jp-fw-semibold: 600;
+  --jp-fw-bold: 700;
+
+  /* ----------------------------------------------------------------- space
+     4px base. Named by step, not by pixel, so the scale can be retuned. */
+  --jp-space-0: 0;
+  --jp-space-1: 0.25rem;   /*  4 */
+  --jp-space-2: 0.5rem;    /*  8 */
+  --jp-space-3: 0.75rem;   /* 12 */
+  --jp-space-4: 1rem;      /* 16 */
+  --jp-space-5: 1.5rem;    /* 24 */
+  --jp-space-6: 2rem;      /* 32 */
+  --jp-space-7: 3rem;      /* 48 */
+  --jp-space-8: 4.5rem;    /* 72 */
+
+  /* ---------------------------------------------------------------- radius
+     Deliberately small and varied. Uniform rounding on every block is one of
+     the tells this redesign exists to remove. */
+  --jp-radius-xs: 3px;    /* pills inside dense rows */
+  --jp-radius-sm: 4px;    /* inputs, selects, textareas */
+  --jp-radius-md: 6px;    /* buttons */
+  --jp-radius-lg: 8px;    /* panels, modal */
+  --jp-radius-pill: 999px;
+
+  /* --------------------------------------------------------------- borders */
+  --jp-border-width: 1px;
+  --jp-border: var(--jp-border-width) solid var(--jp-line);
+  --jp-border-strong: var(--jp-border-width) solid var(--jp-line-strong);
+
+  /* ----------------------------------------------------------------- focus
+     One visible ring, same everywhere, offset so it never sits on the edge it
+     is meant to describe. */
+  --jp-focus-width: 2px;
+  --jp-focus-offset: 2px;
+  --jp-focus-color: var(--jp-accent);
+
+  /* ---------------------------------------------------------------- motion */
+  --jp-duration-fast: 100ms;
+  --jp-duration: 160ms;
+  --jp-ease: cubic-bezier(0.2, 0, 0.2, 1);
+  --jp-duration-slow: 420ms;                    /* things that arrive: modal, clock fill */
+  --jp-ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* decelerate into place */
+
+  /* ------------------------------------------------------------- elevation
+     The only shadow in the system. Cards do not get one. */
+  --jp-shadow-overlay: 0 16px 40px -12px rgb(26 24 21 / 0.28),
+                       0 2px 8px -2px rgb(26 24 21 / 0.12);
+  --jp-scrim: rgb(26 24 21 / 0.45);
+
+  /* ---------------------------------------------------------------- layout */
+  --jp-container-max: 1200px;
+  --jp-gutter: var(--jp-space-5);
+  --jp-gutter-sm: var(--jp-space-4);
+  --jp-header-height: 60px;
+  --jp-tabbar-height: 58px;   /* mobile bottom navigation */
+  --jp-rail-width: 240px;
+
+  /* ------------------------------------------------------------------ z
+     Named, ordered, and the only place stacking is decided. */
+  --jp-z-header: 100;
+  --jp-z-drawer: 200;
+  --jp-z-modal: 300;
+  --jp-z-toast: 400;
+}
+
+/* Respect the OS setting rather than animating regardless. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --jp-duration-fast: 0ms;
+    --jp-duration: 0ms;
+    --jp-duration-slow: 0ms;
+  }
+}

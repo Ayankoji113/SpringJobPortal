@@ -1,0 +1,238 @@
+/* A list is one ruled object: hairlines and rows, no card per row, no shadows. */
+.jp-list {
+  border: var(--jp-border);
+  border-radius: var(--jp-radius-lg);
+  background: var(--jp-surface);
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------- generic row
+   .jp-jobrow / __main / __side / __link / __meta are also used as a plain
+   "row in a list" by other pages, so they stay a simple flex line. */
+.jp-jobrow {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--jp-space-4);
+  padding: var(--jp-space-4) var(--jp-space-5);
+  border-bottom: var(--jp-border);
+  transition: background-color var(--jp-duration) var(--jp-ease);
+}
+
+.jp-list > .jp-jobrow:last-child { border-bottom: 0; }
+
+.jp-jobrow:hover { background: var(--jp-surface-hover); }
+
+.jp-jobrow__main { min-width: 0; flex: 1; }
+
+.jp-jobrow__link {
+  color: var(--jp-ink);
+  text-decoration: none;
+  transition: color var(--jp-duration) var(--jp-ease);
+}
+
+.jp-jobrow__link:hover { color: var(--jp-accent); text-decoration: none; }
+
+/* The whole row is the click target, without nesting interactive elements. */
+.jp-jobrow__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+/* Hovering anywhere on the row is hovering the link, so the title answers. */
+.jp-jobrow:hover .jp-jobrow__link { color: var(--jp-accent); }
+
+/* Focus belongs to the row, since the row is what activates. */
+.jp-jobrow__link:focus-visible { outline: none; }
+.jp-jobrow:has(.jp-jobrow__link:focus-visible) {
+  outline: var(--jp-focus-width) solid var(--jp-focus-color);
+  outline-offset: calc(var(--jp-focus-width) * -1);
+  background: var(--jp-surface-hover);
+}
+
+.jp-jobrow__meta { margin-top: var(--jp-space-1); }
+
+.jp-jobrow__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Interactive children must sit above the row-wide link overlay. */
+.jp-jobrow .jp-btn,
+.jp-jobrow .jp-badge,
+.jp-jobrow select,
+.jp-jobrow label,
+.jp-jobrow input,
+.jp-jobrow details {
+  position: relative;
+  z-index: 1;
+}
+
+.jp-tag {
+  font-size: var(--jp-fs-label);
+  line-height: var(--jp-lh-label);
+  color: var(--jp-ink-secondary);
+  background: var(--jp-n-100);
+  border-radius: var(--jp-radius-xs);
+  padding: 2px var(--jp-space-2);
+  white-space: nowrap;
+}
+
+/* ----------------------------------------------------------------- job row */
+.jp-jobrow--job { gap: var(--jp-space-4); }
+
+.jp-jobrow__title { font-weight: var(--jp-fw-bold); }
+
+.jp-jobrow__company {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 var(--jp-space-3);
+  font-size: var(--jp-fs-sm);
+  line-height: var(--jp-lh-sm);
+  font-weight: var(--jp-fw-medium);
+  color: var(--jp-ink-secondary);
+}
+
+/* Featured is said quietly, twice: a rule down the row's edge and two words. */
+.jp-jobrow--featured::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--jp-accent);
+}
+
+.jp-jobrow__featured {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jp-space-1);
+  font-size: var(--jp-fs-label);
+  font-weight: var(--jp-fw-semibold);
+  color: var(--jp-accent);
+}
+.jp-jobrow__featured svg { fill: currentColor; }
+
+.jp-jobrow__facts { margin-top: var(--jp-space-2); }
+
+.jp-jobrow__tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--jp-space-1);
+  margin-top: var(--jp-space-2);
+  list-style: none;
+}
+
+.jp-jobrow__more {
+  font-size: var(--jp-fs-label);
+  color: var(--jp-ink-muted);
+  padding-left: var(--jp-space-1);
+}
+.jp-jobrow__more--phone { display: none; }
+
+/* Pay is the strongest thing on the right: it is the promise, in numbers. */
+.jp-jobrow__pay {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--jp-space-1);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.jp-jobrow__salary {
+  font-family: var(--jp-font-mono);
+  font-size: var(--jp-fs-body);
+  line-height: var(--jp-lh-h3);
+  font-weight: var(--jp-fw-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--jp-ink);
+}
+
+/* An undisclosed range is deliberately the weakest text in the row. */
+.jp-jobrow__salary--none {
+  font-family: var(--jp-font-body);
+  font-size: var(--jp-fs-sm);
+  font-weight: var(--jp-fw-regular);
+  font-style: italic;
+  color: var(--jp-ink-muted);
+}
+
+.jp-jobrow__posted { font-size: var(--jp-fs-sm); line-height: var(--jp-lh-sm); color: var(--jp-ink-muted); }
+
+.jp-jobrow__actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: var(--jp-space-3);
+  min-width: 84px;
+}
+
+.jp-jobrow__save { min-width: 84px; color: var(--jp-ink-secondary); }
+.jp-jobrow__save[aria-pressed="true"] {
+  background: var(--jp-accent-wash);
+  border-color: var(--jp-accent-border);
+  color: var(--jp-accent-active);
+}
+
+@media (max-width: 640px) {
+  .jp-jobrow {
+    flex-wrap: wrap;
+    padding: var(--jp-space-3) var(--jp-gutter-sm);
+    gap: var(--jp-space-3);
+  }
+
+  .jp-jobrow__side {
+    align-items: flex-start;
+    text-align: left;
+    flex-direction: row;
+    gap: var(--jp-space-3);
+    width: 100%;
+  }
+
+  /* Phone: mark and title on top, facts beneath, then one line that carries
+     the pay on the left and the actions on the right. */
+  .jp-jobrow--job {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "mono main main"
+      "pay  pay  actions";
+    gap: var(--jp-space-2) var(--jp-space-3);
+    align-items: start;
+  }
+  .jp-jobrow--job > :first-child { grid-area: mono; }
+  .jp-jobrow--job > .jp-jobrow__main { grid-area: main; }
+
+  .jp-jobrow__facts { margin-top: var(--jp-space-1); gap: 0 var(--jp-space-3); }
+  .jp-jobrow__tags { flex-wrap: nowrap; overflow: hidden; }
+  .jp-jobrow__tags .jp-tag:nth-child(n + 4) { display: none; }
+  .jp-jobrow__more--wide { display: none; }
+  .jp-jobrow__more--phone { display: block; }
+
+  .jp-jobrow__pay {
+    grid-area: pay;
+    align-self: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--jp-space-3);
+    text-align: left;
+  }
+
+  .jp-jobrow__actions {
+    grid-area: actions;
+    align-self: center;
+    align-items: center;
+    min-width: 0;
+  }
+  .jp-jobrow__actions .jp-jobrow__side { width: auto; align-items: center; }
+  .jp-jobrow__actions .jp-jobrow__side > * { margin-top: 0; }
+
+  .jp-jobrow__save { height: 40px; }
+}

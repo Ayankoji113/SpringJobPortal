@@ -1,0 +1,132 @@
+/* Home. The hero is the one dark band above the fold: the promise on the left,
+   the product's own clock demonstrating it on the right. */
+
+.jp-hero { padding-block: var(--jp-space-8); }
+
+.jp-hero__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: var(--jp-space-8);
+  align-items: center;
+}
+
+.jp-hero__title {
+  font-family: var(--jp-font-display);
+  font-stretch: var(--jp-display-stretch);
+  font-weight: 800;
+  font-size: var(--jp-fs-hero);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+/* Marigold means time, and this is the time. */
+.jp-hero__time { color: var(--jp-signal); white-space: nowrap; }
+
+.jp-hero__body {
+  margin-top: var(--jp-space-5);
+  max-width: 50ch;
+  font-size: var(--jp-fs-h2);
+  line-height: 1.5;
+  color: var(--jp-band-muted);
+}
+
+.jp-hero__search {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  gap: var(--jp-space-3);
+  align-items: end;
+  margin-top: var(--jp-space-6);
+}
+.jp-hero__search .jp-field__label { color: var(--jp-band-muted); }
+.jp-hero__search .jp-input { height: 42px; border-color: var(--jp-band-line); }
+
+/* ---------------------------------------------------------------- the demo */
+.jp-demo {
+  display: grid;
+  gap: var(--jp-space-5);
+  padding: var(--jp-space-5);
+  background: var(--jp-band-raised);
+  border: var(--jp-border-width) solid var(--jp-band-line);
+  border-radius: var(--jp-radius-lg);
+}
+.jp-demo__job { display: flex; align-items: center; gap: var(--jp-space-3); }
+.jp-demo__clock { display: grid; gap: var(--jp-space-2); }
+.jp-demo__foot { padding-top: var(--jp-space-4); border-top: var(--jp-border-width) solid var(--jp-band-line); }
+
+/* StageTrack is drawn for light surfaces; these restate its colours for the band. */
+.jp-demo .jp-track__step { color: var(--jp-band-muted); }
+.jp-demo .jp-track__step--current { color: var(--jp-band-ink); }
+.jp-demo .jp-track__step::before { background: var(--jp-band-line); }
+.jp-demo .jp-track__step--done::before { background: var(--jp-accent-border); }
+.jp-demo .jp-track__dot { background: var(--jp-band-raised); border-color: var(--jp-band-muted); }
+.jp-demo .jp-track__step--done .jp-track__dot { background: var(--jp-accent-border); border-color: var(--jp-accent-border); }
+.jp-demo .jp-track__step--current .jp-track__dot {
+  border-color: var(--jp-band-ink);
+  box-shadow: 0 0 0 3px var(--jp-band-line);
+}
+
+/* ------------------------------------------------------------ the promises
+   One ruled strip, three columns. No boxes. */
+.jp-promises {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: var(--jp-border);
+}
+.jp-promise { padding: var(--jp-space-6) var(--jp-space-6) var(--jp-space-6) 0; }
+.jp-promise + .jp-promise { padding-left: var(--jp-space-6); border-left: var(--jp-border); }
+.jp-promise .jp-h2 { display: flex; align-items: center; gap: var(--jp-space-2); }
+.jp-promise .jp-h2 svg { flex: none; color: var(--jp-accent); }
+.jp-promise p { margin-top: var(--jp-space-2); color: var(--jp-ink-secondary); max-width: 42ch; }
+
+.jp-home__section { padding-top: var(--jp-space-7); }
+.jp-home__section .jp-page-head { align-items: baseline; }
+
+/* ---------------------------------------------------------------- closing */
+.jp-closing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--jp-space-8);
+  margin-top: var(--jp-space-8);
+  padding-top: var(--jp-space-7);
+  border-top: var(--jp-border-strong);
+}
+.jp-closing__body { margin-block: var(--jp-space-4) var(--jp-space-5); max-width: 48ch; color: var(--jp-ink-secondary); }
+
+.jp-steps { list-style: none; counter-reset: step; margin-top: var(--jp-space-2); }
+.jp-steps li {
+  counter-increment: step;
+  position: relative;
+  padding: var(--jp-space-4) 0 var(--jp-space-4) var(--jp-space-7);
+  border-bottom: var(--jp-border);
+}
+.jp-steps li:last-child { border-bottom: 0; }
+.jp-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: var(--jp-space-3);
+  font-family: var(--jp-font-display);
+  font-stretch: var(--jp-display-stretch);
+  font-weight: var(--jp-fw-bold);
+  font-size: var(--jp-fs-h1);
+  color: var(--jp-ink-disabled);
+}
+
+@media (max-width: 960px) {
+  .jp-hero { padding-block: var(--jp-space-7); }
+  .jp-hero__inner, .jp-closing { grid-template-columns: minmax(0, 1fr); gap: var(--jp-space-6); }
+}
+
+@media (max-width: 720px) {
+  .jp-promises { grid-template-columns: minmax(0, 1fr); }
+  .jp-promise, .jp-promise + .jp-promise { padding: var(--jp-space-5) 0; border-left: 0; }
+  .jp-promise + .jp-promise { border-top: var(--jp-border); }
+  .jp-closing { margin-top: var(--jp-space-7); padding-top: var(--jp-space-6); }
+}
+
+@media (max-width: 560px) {
+  .jp-hero { padding-block: var(--jp-space-6); }
+  .jp-hero__search { grid-template-columns: minmax(0, 1fr); }
+  .jp-hero__body { font-size: var(--jp-fs-body); }
+}

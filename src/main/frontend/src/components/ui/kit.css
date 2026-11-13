@@ -1,0 +1,265 @@
+/* Styles for the product primitives in kit.jsx. Tokens only; no raw values
+   except the tick geometry, which is the clock's own drawing. */
+
+/* ------------------------------------------------------------ ResponseClock */
+.jp-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jp-space-3);
+  flex-wrap: wrap;
+}
+
+.jp-clock__ticks { display: inline-flex; gap: 3px; }
+
+.jp-clock__tick {
+  width: 5px;
+  height: 18px;
+  border-radius: 1px;
+  background: var(--jp-n-200);
+}
+
+/* Ticks fill left to right once, when the clock first appears: the one piece
+   of unprompted motion in the product, and it is the product's point. */
+.jp-clock__tick--on {
+  background: var(--jp-signal);
+  animation: jp-tick var(--jp-duration-slow) var(--jp-ease-out) backwards;
+  animation-delay: calc(var(--i) * 28ms);
+}
+
+@keyframes jp-tick {
+  from { transform: scaleY(0.25); background: var(--jp-n-200); }
+}
+
+.jp-clock--answered .jp-clock__tick--on { background: var(--jp-accent); }
+.jp-clock--lapsed .jp-clock__tick--on { background: var(--jp-danger); }
+
+.jp-clock__text {
+  font-size: var(--jp-fs-sm);
+  font-weight: var(--jp-fw-medium);
+  color: var(--jp-ink-secondary);
+}
+.jp-clock--lapsed .jp-clock__text { color: var(--jp-danger); }
+
+.jp-clock--sm .jp-clock__tick { width: 4px; height: 12px; }
+.jp-clock--sm .jp-clock__ticks { gap: 2px; }
+
+.jp-clock--lg .jp-clock__tick { width: 9px; height: 34px; border-radius: 2px; }
+.jp-clock--lg .jp-clock__ticks { gap: 5px; }
+.jp-clock--lg .jp-clock__text { font-size: var(--jp-fs-body); }
+
+/* On a dark band the unspent ticks need their own colour to stay visible. */
+.jp-on-band .jp-clock__tick { background: var(--jp-band-line); }
+.jp-on-band .jp-clock__tick--on { background: var(--jp-signal); }
+.jp-on-band .jp-clock__text { color: var(--jp-band-ink); }
+
+/* --------------------------------------------------------------- StageTrack */
+.jp-track {
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.jp-track__step {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  gap: var(--jp-space-1);
+  font-size: var(--jp-fs-label);
+  color: var(--jp-ink-muted);
+}
+
+/* The rail between dots is drawn by each step toward the next one. */
+.jp-track__step::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 10px;
+  right: 0;
+  height: 2px;
+  background: var(--jp-line);
+}
+.jp-track__step:nth-last-child(1 of .jp-track__step)::before { display: none; }
+.jp-track__step--done::before { background: var(--jp-accent); }
+
+.jp-track__dot {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--jp-radius-pill);
+  background: var(--jp-surface);
+  border: 2px solid var(--jp-line-strong);
+}
+.jp-track__step--done .jp-track__dot { background: var(--jp-accent); border-color: var(--jp-accent); }
+.jp-track__step--current .jp-track__dot {
+  border-color: var(--jp-accent);
+  box-shadow: 0 0 0 3px var(--jp-accent-wash);
+}
+.jp-track__step--current { color: var(--jp-ink); font-weight: var(--jp-fw-semibold); }
+.jp-track__step--done { color: var(--jp-ink-secondary); }
+
+.jp-track--ended .jp-track__step--current .jp-track__dot {
+  border-color: var(--jp-n-500);
+  box-shadow: none;
+}
+.jp-track--ended .jp-track__step--current { color: var(--jp-ink-secondary); font-weight: var(--jp-fw-regular); }
+
+.jp-track__end {
+  align-self: flex-start;
+  margin-left: var(--jp-space-3);
+  white-space: nowrap;
+  font-size: var(--jp-fs-label);
+  font-weight: var(--jp-fw-semibold);
+  color: var(--jp-ink-secondary);
+}
+
+/* Five labels do not fit a phone: keep the dots, name only the current step. */
+@media (max-width: 520px) {
+  .jp-track__step:not(.jp-track__step--current) .jp-track__label { display: none; }
+}
+
+/* ----------------------------------------------------------------- Monogram */
+.jp-mono {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--jp-radius-md);
+  border: var(--jp-border);
+  font-family: var(--jp-font-display);
+  font-weight: var(--jp-fw-bold);
+  font-size: var(--jp-fs-sm);
+  letter-spacing: 0.02em;
+  object-fit: cover;
+  background: var(--jp-surface);
+}
+.jp-mono--t0 { background: var(--jp-accent-wash); color: var(--jp-accent-active); border-color: var(--jp-accent-border); }
+.jp-mono--t1 { background: var(--jp-signal-wash); color: var(--jp-warning); border-color: var(--jp-warning-border); }
+.jp-mono--t2 { background: var(--jp-n-150); color: var(--jp-n-800); border-color: var(--jp-n-300); }
+.jp-mono--t3 { background: var(--jp-band); color: var(--jp-band-ink); border-color: var(--jp-band); }
+.jp-mono--sm { width: 28px; height: 28px; font-size: var(--jp-fs-label); border-radius: var(--jp-radius-sm); }
+.jp-mono--lg { width: 56px; height: 56px; font-size: var(--jp-fs-h3); border-radius: var(--jp-radius-lg); }
+
+/* -------------------------------------------------------------------- Facts */
+.jp-facts {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--jp-space-1) var(--jp-space-4);
+  margin: 0;
+  padding: 0;
+  font-size: var(--jp-fs-sm);
+  color: var(--jp-ink-muted);
+}
+.jp-fact { display: inline-flex; align-items: center; gap: var(--jp-space-1); }
+.jp-fact svg { flex: none; color: var(--jp-n-500); }
+.jp-fact--strong { color: var(--jp-ink); font-weight: var(--jp-fw-medium); }
+
+/* ------------------------------------------------------------------- Proofs */
+.jp-proofs {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--jp-space-2) var(--jp-space-5);
+  margin: 0;
+  padding: 0;
+  font-size: var(--jp-fs-sm);
+  color: var(--jp-ink-secondary);
+}
+.jp-proof { display: inline-flex; align-items: center; gap: var(--jp-space-2); }
+.jp-proof svg { flex: none; color: var(--jp-accent); }
+.jp-on-band .jp-proofs { color: var(--jp-band-muted); }
+.jp-on-band .jp-proof svg { color: var(--jp-signal); }
+
+/* --------------------------------------------------------------------- Stat
+   KPIs share one ruled strip rather than each sitting in its own box. */
+.jp-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  margin: 0;
+  border-block: var(--jp-border);
+}
+.jp-kpi {
+  padding: var(--jp-space-4) var(--jp-space-5) var(--jp-space-4) 0;
+  margin: 0;
+}
+.jp-kpi + .jp-kpi { padding-left: var(--jp-space-5); border-left: var(--jp-border); }
+.jp-kpi__label { font-size: var(--jp-fs-sm); color: var(--jp-ink-muted); }
+.jp-kpi__value {
+  margin: var(--jp-space-1) 0 0;
+  font-family: var(--jp-font-display);
+  font-stretch: var(--jp-display-stretch);
+  font-weight: var(--jp-fw-bold);
+  font-size: var(--jp-fs-display);
+  line-height: 1.1;
+  letter-spacing: var(--jp-ls-display);
+  font-variant-numeric: tabular-nums;
+}
+.jp-kpi__hint { margin: var(--jp-space-1) 0 0; font-size: var(--jp-fs-label); color: var(--jp-ink-muted); }
+.jp-kpi--danger .jp-kpi__value { color: var(--jp-danger); }
+.jp-kpi--accent .jp-kpi__value { color: var(--jp-accent); }
+
+@media (max-width: 640px) {
+  .jp-kpis { grid-template-columns: 1fr 1fr; }
+  .jp-kpi, .jp-kpi + .jp-kpi { padding: var(--jp-space-3) var(--jp-space-3) var(--jp-space-3) 0; border-left: 0; }
+  .jp-kpi:nth-child(n + 3) { border-top: var(--jp-border); }
+}
+
+/* --------------------------------------------------------------- SegmentBar */
+.jp-seg { margin: 0; display: grid; gap: var(--jp-space-3); }
+.jp-seg__bar {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+  border-radius: var(--jp-radius-xs);
+  overflow: hidden;
+}
+.jp-seg__part { min-width: 4px; }
+.jp-seg__part--accent  { background: var(--jp-accent); }
+.jp-seg__part--success { background: var(--jp-success); }
+.jp-seg__part--warning { background: var(--jp-warning); }
+.jp-seg__part--danger  { background: var(--jp-danger); }
+.jp-seg__part--signal  { background: var(--jp-signal); }
+.jp-seg__part--neutral { background: var(--jp-n-400); }
+.jp-seg__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--jp-space-1) var(--jp-space-4);
+  font-size: var(--jp-fs-sm);
+  color: var(--jp-ink-secondary);
+}
+.jp-seg__key { display: inline-flex; align-items: center; gap: var(--jp-space-2); }
+.jp-seg__key strong { font-variant-numeric: tabular-nums; color: var(--jp-ink); }
+.jp-seg__swatch { width: 9px; height: 9px; border-radius: 2px; }
+
+/* --------------------------------------------------------------------- band
+   A full-width dark surface. Children that need to know they are on one
+   (clock, proofs) key off .jp-on-band. */
+.jp-on-band {
+  background: var(--jp-band);
+  color: var(--jp-band-ink);
+}
+.jp-on-band .jp-muted { color: var(--jp-band-muted); }
+.jp-on-band a { color: var(--jp-band-ink); }
+
+/* --------------------------------------------------------------- utilities */
+.jp-row-actions { display: flex; flex-wrap: wrap; gap: var(--jp-space-2); align-items: center; }
+
+.jp-btn--danger {
+  background: var(--jp-danger);
+  border-color: var(--jp-danger);
+  color: var(--jp-danger-ink);
+}
+.jp-btn--danger:hover:not(:disabled) { background: var(--jp-danger-hover); border-color: var(--jp-danger-hover); }
+
+/* Every button answers a press. Scale, not colour, so it reads on any variant. */
+.jp-btn:active:not(:disabled) { transform: scale(0.98); }
+
+@media (prefers-reduced-motion: reduce) {
+  .jp-clock__tick--on { animation: none; }
+  .jp-btn:active:not(:disabled) { transform: none; }
+}

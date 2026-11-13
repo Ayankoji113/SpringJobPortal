@@ -1,0 +1,418 @@
+/* Employer pages: dashboard, candidates, post a job. Tokens only. */
+
+/* Small text-only button (expand a letter, open a resume). Local: no shared primitive covers it. */
+.jp-textbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jp-space-1);
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--jp-accent);
+  font: inherit;
+  font-weight: var(--jp-fw-medium);
+  cursor: pointer;
+}
+.jp-textbtn:hover { color: var(--jp-accent-hover); text-decoration: underline; }
+
+/* ----------------------------------------------------------- posting state
+   Icon + words + colour, so colour is never the only cue. */
+.jp-pstate {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jp-space-1);
+  font-size: var(--jp-fs-sm);
+  font-weight: var(--jp-fw-semibold);
+  white-space: nowrap;
+}
+.jp-pstate--live { color: var(--jp-success); }
+.jp-pstate--review { color: var(--jp-warning); }
+.jp-pstate--refused { color: var(--jp-danger); }
+.jp-pstate--closed { color: var(--jp-ink-muted); }
+
+/* ------------------------------------------------------------ answer record
+   The employer's public record leads the page. One bordered object, three figures. */
+.jp-record {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 2.4fr);
+  gap: var(--jp-space-6);
+  padding: var(--jp-space-5) var(--jp-space-6);
+  background: var(--jp-surface);
+  border: var(--jp-border);
+  border-radius: var(--jp-radius-lg);
+}
+.jp-record__intro p { margin-top: var(--jp-space-2); max-width: 32ch; }
+
+.jp-record__figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+.jp-record__fig {
+  display: grid;
+  align-content: start;
+  gap: var(--jp-space-2);
+  padding-left: var(--jp-space-5);
+  border-left: var(--jp-border);
+}
+.jp-record__fig dt { font-size: var(--jp-fs-sm); color: var(--jp-ink-muted); }
+.jp-record__fig dd { margin: 0; }
+.jp-record__num {
+  font-family: var(--jp-font-display);
+  font-stretch: var(--jp-display-stretch);
+  font-weight: var(--jp-fw-bold);
+  font-size: var(--jp-fs-display);
+  line-height: 1.1;
+  letter-spacing: var(--jp-ls-display);
+  font-variant-numeric: tabular-nums;
+}
+/* Candidates waiting is a deadline in play: the one place marigold appears on the page besides clocks. */
+.jp-record__fig--due { box-shadow: inset 3px 0 0 var(--jp-signal); border-left-color: transparent; }
+.jp-record__act { display: flex; flex-wrap: wrap; align-items: center; gap: var(--jp-space-2) var(--jp-space-3); }
+.jp-record__lapsed { display: inline-flex; align-items: center; gap: var(--jp-space-1); color: var(--jp-danger); }
+
+/* ------------------------------------------------------------- first run */
+.jp-firstrun {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: var(--jp-space-7);
+  margin-top: var(--jp-space-7);
+  padding-top: var(--jp-space-6);
+  border-top: var(--jp-border);
+}
+.jp-firstrun > div { display: grid; gap: var(--jp-space-4); justify-items: start; align-content: start; }
+.jp-firstrun > div p { max-width: 46ch; }
+.jp-firstrun__steps { list-style: none; counter-reset: step; display: grid; gap: var(--jp-space-5); }
+.jp-firstrun__steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: var(--jp-space-6) minmax(0, 1fr);
+  column-gap: var(--jp-space-3);
+}
+.jp-firstrun__steps li::before {
+  content: counter(step);
+  grid-row: span 2;
+  font-family: var(--jp-font-display);
+  font-stretch: var(--jp-display-stretch);
+  font-weight: var(--jp-fw-bold);
+  font-size: var(--jp-fs-h1);
+  line-height: 1;
+  color: var(--jp-accent);
+}
+
+/* ---------------------------------------------------------------- dashboard */
+.jp-dash__kpis { margin-top: var(--jp-space-6); }
+
+.jp-dash__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--jp-space-6);
+  align-items: start;
+  margin-top: var(--jp-space-6);
+}
+.jp-dash__head { display: flex; align-items: baseline; gap: var(--jp-space-3); margin-bottom: var(--jp-space-3); }
+
+.jp-dash__pipeline {
+  position: sticky;
+  top: calc(var(--jp-header-height) + var(--jp-space-5));
+  display: grid;
+  gap: var(--jp-space-4);
+  padding-top: var(--jp-space-1);
+}
+
+/* The posting list is one object, so it is the bordered surface here. */
+.jp-postings {
+  list-style: none;
+  background: var(--jp-surface);
+  border: var(--jp-border);
+  border-radius: var(--jp-radius-lg);
+}
+.jp-posting {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px 150px 90px auto;
+  gap: var(--jp-space-4);
+  align-items: start;
+  padding: var(--jp-space-4) var(--jp-space-5);
+}
+.jp-posting + .jp-posting { border-top: var(--jp-border); }
+.jp-posting__main { display: grid; gap: var(--jp-space-1); min-width: 0; }
+.jp-posting__main .jp-h3 a { color: var(--jp-ink); text-decoration: none; }
+.jp-posting__main .jp-h3 a:hover { color: var(--jp-accent); text-decoration: underline; }
+.jp-posting__state, .jp-posting__pay, .jp-posting__views { padding-top: 2px; }
+.jp-posting__views { white-space: nowrap; }
+.jp-posting__actions { display: flex; align-items: center; gap: var(--jp-space-1); }
+.jp-posting__note { grid-column: 1 / -1; margin-top: calc(var(--jp-space-2) * -1); color: var(--jp-warning); }
+.jp-posting__reason {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: var(--jp-space-1);
+  padding: var(--jp-space-2) var(--jp-space-3);
+  max-width: 70ch;
+  background: var(--jp-danger-wash);
+  border-left: 3px solid var(--jp-danger);
+  border-radius: 0 var(--jp-radius-sm) var(--jp-radius-sm) 0;
+}
+.jp-posting--closed .jp-posting__main .jp-h3 a { color: var(--jp-ink-muted); }
+
+.jp-consequences { display: grid; gap: var(--jp-space-3); padding-left: var(--jp-space-4); max-width: 60ch; }
+
+/* -------------------------------------------------------------- candidates */
+.jp-ma__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--jp-space-3) var(--jp-space-6);
+  padding-bottom: var(--jp-space-5);
+  border-bottom: var(--jp-border);
+}
+.jp-ma__pick { width: min(100%, 380px); }
+.jp-ma__facts { padding-bottom: var(--jp-space-2); }
+
+.jp-ma { display: grid; gap: var(--jp-space-7); margin-top: var(--jp-space-6); }
+.jp-ma__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--jp-space-2) var(--jp-space-3); margin-bottom: var(--jp-space-4); }
+.jp-ma__count {
+  font-family: var(--jp-font-mono);
+  font-size: var(--jp-fs-data);
+  font-weight: var(--jp-fw-medium);
+  color: var(--jp-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+.jp-ma__list { display: grid; gap: var(--jp-space-3); }
+.jp-ma__clear { display: flex; align-items: center; gap: var(--jp-space-2); color: var(--jp-success); }
+
+/* One candidate is one object. Stacked by default (board columns, phones). */
+.jp-cand {
+  display: grid;
+  gap: var(--jp-space-3);
+  padding: var(--jp-space-4);
+  background: var(--jp-surface);
+  border: var(--jp-border);
+  border-radius: var(--jp-radius-lg);
+  min-width: 0;
+  padding-bottom: var(--jp-space-2);
+}
+.jp-cand__who { display: flex; gap: var(--jp-space-3); align-items: flex-start; min-width: 0; }
+.jp-cand__who .jp-mono { margin-top: 2px; }
+.jp-cand__letter { min-width: 0; }
+.jp-cand__letter p { color: var(--jp-ink-secondary); max-width: 70ch; white-space: pre-line; }
+.jp-cand__clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.jp-cand__side { display: grid; gap: var(--jp-space-3); align-content: start; }
+.jp-cand__moves { display: flex; flex-wrap: wrap; gap: var(--jp-space-2); }
+.jp-cand__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 var(--jp-space-5);
+  padding-top: var(--jp-space-2);
+  border-top: var(--jp-border);
+}
+.jp-cand__foot .jp-timeline { margin-top: 0; }
+.jp-cand__foot .jp-timeline summary { min-height: 32px; display: flex; align-items: center; }
+.jp-cand__foot .jp-timeline[open] { flex-basis: 100%; order: 2; }
+
+/* A waiting candidate gets a row: who, what they wrote, then the clock and the answer. */
+@media (min-width: 900px) {
+  .jp-cand--wide {
+    grid-template-columns: minmax(200px, 0.9fr) minmax(0, 1.7fr) minmax(220px, 0.9fr);
+    gap: var(--jp-space-3) var(--jp-space-6);
+    padding: var(--jp-space-5) var(--jp-space-5) var(--jp-space-2);
+  }
+  .jp-cand--wide .jp-cand__foot { grid-column: 1 / -1; }
+}
+
+/* Stage columns on wide screens; moves happen through each card's buttons. */
+.jp-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--jp-space-4); align-items: start; }
+.jp-board__col {
+  display: grid;
+  gap: var(--jp-space-3);
+  padding: var(--jp-space-3);
+  background: var(--jp-surface-sunk);
+  border-radius: var(--jp-radius-lg);
+  min-width: 0;
+}
+.jp-board__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--jp-space-2);
+  padding: var(--jp-space-1) var(--jp-space-1) 0;
+  font-size: var(--jp-fs-body);
+  font-weight: var(--jp-fw-semibold);
+}
+.jp-board__empty { padding: var(--jp-space-2) var(--jp-space-1); }
+
+.jp-ma__closed { border-top: var(--jp-border); padding-top: var(--jp-space-4); }
+.jp-ma__closed summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--jp-space-2) var(--jp-space-3);
+  min-height: 40px;
+  cursor: pointer;
+  list-style: none;
+}
+.jp-ma__closed summary::-webkit-details-marker { display: none; }
+.jp-ma__chev { align-self: center; color: var(--jp-ink-muted); transition: transform var(--jp-duration) var(--jp-ease); }
+.jp-ma__closed[open] .jp-ma__chev { transform: rotate(90deg); }
+.jp-closedlist { list-style: none; margin-top: var(--jp-space-3); background: var(--jp-surface); border: var(--jp-border); border-radius: var(--jp-radius-lg); }
+.jp-closedlist li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: var(--jp-space-1) var(--jp-space-4);
+  align-items: baseline;
+  padding: var(--jp-space-3) var(--jp-space-4);
+}
+.jp-closedlist li + li { border-top: var(--jp-border); }
+.jp-closedlist__name { font-weight: var(--jp-fw-medium); }
+.jp-closedlist__hired { color: var(--jp-success); font-weight: var(--jp-fw-semibold); }
+.jp-closedlist .jp-timeline { margin-top: 0; }
+
+/* -------------------------------------------------------------- post a job */
+.jp-pj {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: var(--jp-space-7);
+  align-items: start;
+}
+.jp-pj__form { min-width: 0; }
+
+/* A section is a ruled row: its name on the left, its fields on the right. */
+.jp-pj__sec {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: var(--jp-space-5);
+  padding-block: var(--jp-space-6);
+  border-top: var(--jp-border);
+}
+.jp-pj__sec:first-child { border-top: 0; padding-top: 0; }
+.jp-pj__sechead p { margin-top: var(--jp-space-1); }
+.jp-pj__secbody { display: flex; flex-direction: column; gap: var(--jp-space-4); min-width: 0; }
+.jp-pj__narrow { max-width: 240px; }
+.jp-pj__pair, .jp-pj__pay { display: grid; grid-template-columns: 1fr 1fr; gap: var(--jp-space-4); }
+.jp-pj__pay .jp-input { font-family: var(--jp-font-mono); }
+.jp-pj__chips { list-style: none; }
+.jp-pj__check { display: flex; align-items: center; gap: var(--jp-space-2); min-height: 40px; font-weight: var(--jp-fw-medium); cursor: pointer; width: fit-content; }
+.jp-pj__check input { width: 18px; height: 18px; accent-color: var(--jp-accent); }
+
+.jp-pj__submit {
+  display: grid;
+  gap: var(--jp-space-4);
+  padding-top: var(--jp-space-5);
+  border-top: var(--jp-border-strong);
+}
+.jp-pj__terms { list-style: none; display: grid; gap: var(--jp-space-2); color: var(--jp-ink-secondary); max-width: 70ch; }
+.jp-pj__terms li { display: flex; gap: var(--jp-space-2); align-items: flex-start; }
+.jp-pj__terms svg { flex: none; margin-top: 3px; color: var(--jp-ink-muted); }
+.jp-pj__terms .jp-pj__time { color: var(--jp-signal); }
+
+.jp-pj__notice {
+  display: flex;
+  gap: var(--jp-space-3);
+  align-items: flex-start;
+  padding: var(--jp-space-3) var(--jp-space-4);
+  margin-bottom: var(--jp-space-5);
+  border-radius: var(--jp-radius-md);
+  max-width: 80ch;
+}
+.jp-pj__submit .jp-pj__notice { margin-bottom: 0; }
+.jp-pj__notice svg { flex: none; margin-top: 3px; }
+.jp-pj__notice--danger { background: var(--jp-danger-wash); border: var(--jp-border-width) solid var(--jp-danger-border); color: var(--jp-ink); }
+.jp-pj__notice--danger svg { color: var(--jp-danger); }
+
+.jp-pj__aside {
+  position: sticky;
+  top: calc(var(--jp-header-height) + var(--jp-space-5));
+  display: grid;
+  gap: var(--jp-space-3);
+}
+.jp-pj__preview {
+  background: var(--jp-surface);
+  border: var(--jp-border);
+  border-radius: var(--jp-radius-lg);
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------- responsive */
+@media (max-width: 1100px) {
+  .jp-dash__grid { grid-template-columns: minmax(0, 1fr); }
+  .jp-dash__pipeline { position: static; }
+  .jp-dash__pipeline .jp-btn--block { width: fit-content; }
+  .jp-board { grid-template-columns: minmax(0, 1fr); }
+  .jp-board__col { background: none; padding: 0; }
+  .jp-pj { grid-template-columns: minmax(0, 1fr); }
+  .jp-pj__aside { position: static; }
+}
+
+@media (max-width: 900px) {
+  .jp-record { grid-template-columns: minmax(0, 1fr); gap: var(--jp-space-4); }
+  .jp-posting {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "main main" "state views" "note note" "pay actions";
+    row-gap: var(--jp-space-2);
+  }
+  .jp-posting__main { grid-area: main; }
+  .jp-posting__state { grid-area: state; }
+  .jp-posting__views { grid-area: views; text-align: right; }
+  .jp-posting__note, .jp-posting__reason { grid-area: note; margin-top: 0; }
+  .jp-posting__pay { grid-area: pay; align-self: center; }
+  .jp-posting__actions { grid-area: actions; }
+  .jp-posting__state, .jp-posting__pay, .jp-posting__views { padding-top: 0; }
+  .jp-firstrun { grid-template-columns: minmax(0, 1fr); gap: var(--jp-space-5); }
+  .jp-closedlist li { grid-template-columns: minmax(0, 1fr) auto; }
+  .jp-closedlist li > :nth-child(3) { grid-column: 1; }
+  .jp-closedlist .jp-timeline { grid-column: 1 / -1; }
+}
+
+@media (max-width: 640px) {
+  .jp-record { padding: var(--jp-space-4); }
+  .jp-record__figures { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: var(--jp-space-3); }
+  .jp-record__fig { padding: var(--jp-space-3) 0; border-left: 0; border-top: var(--jp-border); }
+  .jp-record__fig--due { grid-column: 1 / -1; }
+  .jp-record__num { font-size: var(--jp-fs-h1); }
+  .jp-record__fig--due { border-top-color: var(--jp-line); padding-left: var(--jp-space-3); }
+  .jp-posting { padding: var(--jp-space-4); }
+  .jp-posting__actions .jp-btn--icon { width: 40px; height: 40px; }
+  .jp-cand__moves .jp-btn { height: 40px; }
+  .jp-pj__sec { grid-template-columns: minmax(0, 1fr); gap: var(--jp-space-3); padding-block: var(--jp-space-5); }
+  .jp-pj__pair, .jp-pj__pay { grid-template-columns: minmax(0, 1fr); }
+  .jp-pj__narrow { max-width: none; }
+  .jp-pj__submit .jp-row-actions .jp-btn--primary { flex: 1; }
+}
+
+/* The preview column is narrower than a listing, so the row is laid out the way phones show it:
+   pay under the title instead of squeezing the title into a third of the width. */
+.jp-pj__preview .jp-jobrow--job {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "mono main" "mono pay";
+  gap: var(--jp-space-2) var(--jp-space-3);
+}
+.jp-pj__preview .jp-jobrow--job > :first-child { grid-area: mono; }
+.jp-pj__preview .jp-jobrow__main { grid-area: main; }
+.jp-pj__preview .jp-jobrow__pay {
+  grid-area: pay;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--jp-space-3);
+  text-align: left;
+}
+
+.jp-pj__nexthead { margin-top: var(--jp-space-4); padding-top: var(--jp-space-4); border-top: var(--jp-border); }
+.jp-pj__next { list-style: none; counter-reset: step; display: grid; gap: var(--jp-space-3); }
+.jp-pj__next li { counter-increment: step; display: grid; grid-template-columns: var(--jp-space-5) minmax(0, 1fr); }
+.jp-pj__next li::before { content: counter(step); font-family: var(--jp-font-display); font-weight: var(--jp-fw-bold); color: var(--jp-accent); }
+.jp-pj__next p + p { grid-column: 2; }
+
+@media (max-width: 1100px) {
+  .jp-pj__nexthead, .jp-pj__next { display: none; }
+}
+
+/* "No record yet" is a state, not a figure: same place, quieter. */
+.jp-record__num--none { font-size: var(--jp-fs-h2); font-stretch: normal; color: var(--jp-ink-muted); padding-block: var(--jp-space-2); }

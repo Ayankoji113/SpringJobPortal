@@ -1,0 +1,89 @@
+/* Application history: dated steps on a rail. Selectors are scoped under .jp-history so they
+   win over the older .jp-timeline rules in pages.css without editing that file. */
+
+.jp-history { margin-top: var(--jp-space-2); }
+
+.jp-history .jp-history__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jp-space-1);
+  min-height: 32px;
+  padding-right: var(--jp-space-2);
+  list-style: none;
+  cursor: pointer;
+  font-size: var(--jp-fs-sm);
+  font-weight: var(--jp-fw-medium);
+  color: var(--jp-ink-secondary);
+  width: fit-content;
+}
+.jp-history__toggle::-webkit-details-marker { display: none; }
+.jp-history__toggle:hover { color: var(--jp-accent); }
+.jp-history__toggle svg { transition: transform var(--jp-duration) var(--jp-ease); }
+.jp-history[open] .jp-history__toggle svg { transform: rotate(90deg); }
+
+.jp-history__body { padding: var(--jp-space-2) 0 var(--jp-space-3); }
+.jp-history__loading { display: grid; gap: var(--jp-space-2); max-width: 420px; padding-left: var(--jp-space-5); }
+.jp-history__error { color: var(--jp-danger); }
+
+.jp-history .jp-history__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: block;
+  max-width: 720px;
+}
+
+.jp-history__step {
+  position: relative;
+  padding: 0 0 var(--jp-space-4) var(--jp-space-5);
+}
+/* The rail runs from this dot down to the next one. */
+.jp-history__step::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 14px;
+  bottom: 0;
+  width: 2px;
+  background: var(--jp-line);
+}
+.jp-history__step--last { padding-bottom: 0; }
+.jp-history__step--last::before { display: none; }
+
+.jp-history__dot {
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--jp-radius-pill);
+  background: var(--jp-surface);
+  border: 2px solid var(--jp-n-400);
+}
+.jp-history__dot--employer { border-color: var(--jp-accent); }
+.jp-history__step--last .jp-history__dot { background: var(--jp-accent); border-color: var(--jp-accent); }
+.jp-history__step--last .jp-history__dot--system { background: var(--jp-danger); border-color: var(--jp-danger); }
+
+.jp-history__line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--jp-space-3); }
+.jp-history__what { font-size: var(--jp-fs-sm); font-weight: var(--jp-fw-semibold); color: var(--jp-ink); }
+.jp-history__when { font-family: var(--jp-font-mono); font-size: var(--jp-fs-label); color: var(--jp-ink-muted); font-variant-numeric: tabular-nums; }
+.jp-history__who { font-size: var(--jp-fs-label); color: var(--jp-ink-muted); }
+
+/* The employer's own words, set apart as a quotation. */
+.jp-history__note {
+  margin-top: var(--jp-space-2);
+  padding: var(--jp-space-2) var(--jp-space-3);
+  border-left: 3px solid var(--jp-accent-border);
+  background: var(--jp-surface-sunk);
+  border-radius: 0 var(--jp-radius-sm) var(--jp-radius-sm) 0;
+  font-size: var(--jp-fs-sm);
+  color: var(--jp-ink-secondary);
+  max-width: 65ch;
+}
+@media (max-width: 720px) {
+  .jp-history .jp-history__toggle { min-height: 40px; }
+}
+
+.jp-history__note p::before { content: "\201C"; }
+.jp-history__note p::after { content: "\201D"; }
