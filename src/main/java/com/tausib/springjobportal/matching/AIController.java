@@ -1,10 +1,12 @@
 package com.tausib.springjobportal.matching;
 
+import com.tausib.springjobportal.job.JobMapper;
 import com.tausib.springjobportal.job.JobPost;
 import com.tausib.springjobportal.job.JobService;
 
 import com.tausib.springjobportal.user.UserPrincipal;
 
+import com.tausib.springjobportal.matching.dto.MatchScoreResponse;
 import com.tausib.springjobportal.matching.dto.SalaryEstimateResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,15 +24,16 @@ public class AIController {
     private final AIService aiService;
     private final SalaryEstimateService salaryEstimateService;
     private final JobService jobService;
+    private final JobMapper jobMapper;
 
     @GetMapping("/match-score/{jobId}")
     @PreAuthorize("hasRole('JOB_SEEKER')")
-    public ResponseEntity<MatchScore> getMatchScore(
+    public ResponseEntity<MatchScoreResponse> getMatchScore(
             @PathVariable Integer jobId,
             @AuthenticationPrincipal UserPrincipal user
     ) {
         JobPost job = jobService.getEntityById(jobId);
-        return ResponseEntity.ok(aiService.calculateMatchScore(user.getId(), job));
+        return ResponseEntity.ok(toResponse(aiService.calculateMatchScore(user.getId(), job)));
     }
 
     /**
@@ -45,11 +48,23 @@ public class AIController {
 
     @GetMapping("/recommended-jobs")
     @PreAuthorize("hasRole('JOB_SEEKER')")
-    public ResponseEntity<List<MatchScore>> getRecommendedJobs(
+    public ResponseEntity<List<MatchScoreResponse>> getRecommendedJobs(
             @AuthenticationPrincipal UserPrincipal user,
             @RequestParam(defaultValue = "50") double threshold
     ) {
         List<JobPost> allJobs = jobService.getAllEntities();
-        return ResponseEntity.ok(aiService.getRecommendedJobs(user.getId(), allJobs, threshold));
+        return ResponseEntity.ok(aiService.getRecommendedJobs(user.getId(), allJobs, threshold)
+                .stream().map(this::toResponse).toList());
+    }
+
+    /** The entity never leaves this class: it carries full User rows (see MatchScoreResponse). */
+    private MatchScoreResponse toResponse(MatchScore match) {
+        return new MatchScoreResponse(
+                match.getId(),
+                jobMapper.toResponse(match.getJobPost()),
+                match.getScore(),
+                List.copyOf(match.getMatchedSkills()),
+                List.copyOf(match.getMissingSkills()),
+                match.getGeneratedAt());
     }
 }
